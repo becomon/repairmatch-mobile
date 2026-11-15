@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 function inform(title: string, message: string) {
   return new Promise<void>(resolve => {
@@ -15,7 +15,8 @@ export async function pickPhoto(source: 'camera' | 'gallery') {
     exif: false,
   };
 
-  if (source === 'camera') {
+  // Alert.alert is a no-op on web, so the camera confirmation would never resolve there.
+  if (source === 'camera' && Platform.OS !== 'web') {
     const proceed = await new Promise<boolean>((resolve) => {
       Alert.alert("Acceso a la cámara", "Usa la cámara para fotografiar el electrodoméstico. También puedes elegir una foto de la galería.", [
         { text: "Galería", onPress: () => resolve(false) },
