@@ -1,20 +1,12 @@
-import { useState } from 'react';
 import { View } from 'react-native';
-import { useAuth, useUser } from '@/features/auth/AuthProvider';
-import { IdentityCard } from '@/features/identity/IdentityCard';
+import { SignOutDialog, useSignOut, useUser } from '@/features/auth';
+import { IdentityCard } from '@/features/identity';
 import { colors } from '@/shared/theme';
-import { Avatar, Button, Card, ConfirmDialog, InfoRow, Screen, ScreenHeader, Text } from '@/shared/ui';
+import { Avatar, Button, Card, InfoRow, Screen, ScreenHeader, Text } from '@/shared/ui';
 
 export default function ClientProfileTab() {
   const user = useUser();
-  const { logout } = useAuth();
-  const [confirming, setConfirming] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  async function signOut() {
-    setBusy(true);
-    await logout();
-  }
+  const signOut = useSignOut();
 
   return (
     <Screen inTabs header={<ScreenHeader title="Perfil" />}>
@@ -29,18 +21,9 @@ export default function ClientProfileTab() {
       </Card>
       <IdentityCard />
       <View style={{ paddingTop: 8 }}>
-        <Button label="Cerrar sesión" variant="danger" icon="log-out-outline" onPress={() => setConfirming(true)} />
+        <Button label="Cerrar sesión" variant="danger" icon="log-out-outline" onPress={signOut.ask} />
       </View>
-      <ConfirmDialog
-        visible={confirming}
-        title="¿Cerrar sesión?"
-        message="Tendrás que ingresar tu correo y contraseña la próxima vez."
-        confirmLabel="Cerrar sesión"
-        destructive
-        loading={busy}
-        onConfirm={() => void signOut()}
-        onCancel={() => setConfirming(false)}
-      />
+      <SignOutDialog state={signOut} />
     </Screen>
   );
 }

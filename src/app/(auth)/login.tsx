@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Link } from 'expo-router';
-import { useAuth } from '@/features/auth/AuthProvider';
-import { BrandMark } from '@/features/auth/BrandMark';
-import { validateEmail } from '@/features/auth/validation';
-import { friendlyError, ApiError } from '@/shared/api/errors';
+import { BrandMark, useAuth, validateEmail } from '@/features/auth';
+import { ApiError, friendlyError } from '@/shared/api/errors';
+import { useAsyncAction } from '@/shared/hooks/useAsyncAction';
 import { colors } from '@/shared/theme';
 import { Banner, Button, Screen, Text, TextField } from '@/shared/ui';
 
@@ -15,24 +14,22 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState<string>();
   const [passwordError, setPasswordError] = useState<string>();
   const [formError, setFormError] = useState('');
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useAsyncAction();
 
-  async function submit() {
-    const eErr = validateEmail(email);
-    const pErr = password ? undefined : 'Escribe tu contraseña.';
-    setEmailError(eErr);
-    setPasswordError(pErr);
-    setFormError('');
-    if (eErr || pErr) return;
-    setBusy(true);
-    try {
-      await login(email, password);
-    } catch (error) {
-      setFormError(error instanceof ApiError && error.status === 401 ? 'Correo o contraseña incorrectos.' : friendlyError(error));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const submit = () =>
+    run(async () => {
+      const eErr = validateEmail(email);
+      const pErr = password ? undefined : 'Escribe tu contraseña.';
+      setEmailError(eErr);
+      setPasswordError(pErr);
+      setFormError('');
+      if (eErr || pErr) return;
+      try {
+        await login(email, password);
+      } catch (error) {
+        setFormError(error instanceof ApiError && error.status === 401 ? 'Correo o contraseña incorrectos.' : friendlyError(error));
+      }
+    });
 
   return (
     <Screen band="mint"

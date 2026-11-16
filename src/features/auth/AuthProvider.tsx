@@ -7,8 +7,16 @@ import {
   saveTokens,
   setSessionExpiredHandler,
 } from '@/shared/api/client';
+import { runSessionCleaners } from '@/shared/api/session';
 import type { RegisterBody, User } from '@/shared/api/types';
-import { clearRequestCache } from '../requests/useRequestSummary';
+
+/** Registration worked but the automatic sign-in after it did not. */
+export class AccountCreatedError extends Error {
+  constructor(cause: unknown) {
+    super("Tu cuenta se creó, pero no pudimos iniciar sesión. Entra desde \"Iniciar sesión\" con tu correo y contraseña.", { cause });
+    this.name = "AccountCreatedError";
+  }
+}
 
 type Status = 'loading' | 'signedOut' | 'signedIn';
 
@@ -52,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // The client calls this when a 401 cannot be recovered by refreshing.
   useEffect(() => {
     setSessionExpiredHandler(() => {
+      runSessionCleaners();
       setUser(null);
       setStatus('signedOut');
     });
@@ -69,7 +78,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(
     async (body: RegisterBody) => {
       await authApi.register({ ...body, name: body.name.trim(), email: body.email.trim() });
-      await login(body.email, body.password);
+      try {
+        await login(body.email, body.password);
+      } catch (cause) {
+        // The account exists now: retrying the form would answer "email already registered".
+        throw new AccountCreatedError(cause);
+      }
     },
     [login],
   );
@@ -79,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Revoke on the server best-effort; the local session ends either way.
     if (refreshToken) await authApi.logout(refreshToken).catch(() => undefined);
     await clearTokens();
-    clearRequestCache();
+    runSessionCleaners();
     setUser(null);
     setStatus('signedOut');
   }, []);
