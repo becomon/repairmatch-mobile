@@ -32,7 +32,7 @@ export function ProposalOfferCard({ offer: o, selected, top, selectable, onToggl
         <Avatar name={p.technicianName} />
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="bodyStrong" numberOfLines={1}>{p.technicianName}</Text>
-          {p.identityVerified ? <IdentityPill /> : null}
+          {p.identityVerified ? <IdentityPill nameMatches={p.identityNameMatches} /> : null}
           <RatingSummary average={o.averageRating} count={o.reviewCount} />
           {o.distanceKm !== null ? <Text variant="small" color={colors.textMuted}>a {formatDistance(o.distanceKm)}</Text> : null}
         </View>

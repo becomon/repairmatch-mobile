@@ -59,7 +59,7 @@ export function IdentityCard() {
     <Card style={{ gap: 12 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <Text variant="heading" accessibilityRole="header">Verificación de identidad</Text>
-        {current?.status === 'VERIFIED' ? <IdentityPill /> : null}
+        {current?.status === 'VERIFIED' ? <IdentityPill nameMatches={current.nameMatches} /> : null}
       </View>
 
       {state.initialLoading ? (
@@ -85,6 +85,9 @@ export function IdentityCard() {
           {current.status === 'PENDING' ? <Button label="Actualizar estado" variant="secondary" icon="refresh-outline" onPress={state.refetch} /> : null}
           <Text variant="small" color={colors.textMuted}>
             No guardamos fotos de tu documento ni datos biométricos: solo si quedaste verificado o no.
+          </Text>
+          <Text variant="small" color={colors.textMuted}>
+            El nombre del perfil lo elige cada usuario. La verificación confirma que es una persona real con un documento válido.
           </Text>
         </>
       )}
