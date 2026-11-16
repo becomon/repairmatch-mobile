@@ -116,7 +116,7 @@ El APK se genera en la nube con EAS Build (perfil `preview`, ver `eas.json`). La
 
 1. Crea una cuenta en expo.dev e inicia sesión: `npx eas-cli@latest login`.
 2. Vincula el proyecto (crea el id de proyecto en tu cuenta): `npx eas-cli@latest init`.
-3. Crea la variable de la clave de Maps en EAS, con visibilidad `secret`, para el entorno `preview`: `npx eas-cli@latest env:create --name GOOGLE_MAPS_API_KEY --value "<tu-clave>" --environment preview --visibility secret`.
+3. Crea la variable de la clave de Maps en EAS, con visibilidad `secret`, para el entorno `preview`: `npx eas-cli@latest env:set --name GOOGLE_MAPS_API_KEY --value "<tu-clave>" --environment preview --visibility secret`.
 4. Genera el APK: `npx eas-cli@latest build --platform android --profile preview`. En la primera ejecución acepta crear el keystore de Android.
 5. Copia el SHA-1 en expo.dev, en Credentials, Android, `pe.edu.utec.repairmatch`, Android Keystore. En Google Cloud, restringe la clave a apps Android con ese paquete y ese SHA-1, y activa Maps SDK for Android.
 6. Descarga el APK desde el enlace o el QR del build e instálalo en el celular. El backend en Render tarda unos 50 s en despertar.
