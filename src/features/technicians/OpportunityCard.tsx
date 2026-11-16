@@ -4,7 +4,7 @@ import { applianceTitle } from '@/features/catalog/appliances';
 import type { MatchingRequest } from '@/shared/api/types';
 import { formatDistance, pluralize } from '@/shared/format';
 import { colors } from '@/shared/theme';
-import { Button, Card, InfoChip, Text } from '@/shared/ui';
+import { Button, Card, IdentityPill, InfoChip, Text } from '@/shared/ui';
 import { ApplianceTile } from '../requests/ApplianceTile';
 
 interface Props {
@@ -36,11 +36,12 @@ export function OpportunityCard({ request, timeLabel, reasons = [], symptom, pro
         </View>
         <InfoChip label={formatDistance(request.distanceKm)} />
       </View>
+      {request.clientIdentityVerified ? <IdentityPill label="Cliente verificado" /> : null}
       <Text variant="small" color={colors.textSoft} numberOfLines={3}>«{request.description}»</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {reasons.slice(0, 3).map((reason) => (
-          <View key={reason} style={{ backgroundColor: colors.accentSoft, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}>
-            <Text variant="small" color={colors.accentDark}>{reason}</Text>
+          <View key={reason} style={{ backgroundColor: colors.freshSoft, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}>
+            <Text variant="small" color={colors.freshStrong}>{reason}</Text>
           </View>
         ))}
         {symptom ? <InfoChip label={symptom} /> : null}

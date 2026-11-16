@@ -4,7 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { Manrope_700Bold, Manrope_800ExtraBold } from '@expo-google-fonts/manrope';
+import { PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import { colors } from '@/shared/theme';
@@ -13,8 +13,8 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Manrope_700Bold,
-    Manrope_800ExtraBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
@@ -41,6 +41,6 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  outer: { flex: 1, alignItems: 'center', backgroundColor: Platform.OS === 'web' ? '#e9edf5' : colors.background },
+  outer: { flex: 1, alignItems: 'center', backgroundColor: Platform.OS === 'web' ? colors.surface2 : colors.background },
   inner: { flex: 1, width: '100%', maxWidth: 480, backgroundColor: colors.background },
 });

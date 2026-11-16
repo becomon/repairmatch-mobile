@@ -11,7 +11,7 @@ export const REQUEST_STATUS_LABEL: Record<RequestStatus, string> = {
 
 export const REQUEST_STATUS_TONE: Record<RequestStatus, Tone> = {
   PUBLICADA: tones.primarySoft,
-  CON_PROPUESTAS: tones.primary,
+  CON_PROPUESTAS: tones.fresh,
   CERRADA: tones.success,
   CANCELADA: tones.neutral,
   EXPIRADA: tones.warning,
@@ -26,8 +26,8 @@ export const SERVICE_STATUS_LABEL: Record<ServiceStatus, string> = {
 
 export const SERVICE_STATUS_TONE: Record<ServiceStatus, Tone> = {
   PROGRAMADO: tones.neutral,
-  EN_ATENCION: tones.warning,
-  COMPLETADO: tones.success,
+  EN_ATENCION: tones.primarySoft,
+  COMPLETADO: tones.fresh,
   CANCELADO: tones.danger,
 };
 
@@ -39,7 +39,7 @@ export const PROPOSAL_STATUS_LABEL: Record<ProposalStatus, string> = {
 
 export const PROPOSAL_STATUS_TONE: Record<ProposalStatus, Tone> = {
   PENDING: tones.primarySoft,
-  ACCEPTED: tones.success,
+  ACCEPTED: tones.fresh,
   REJECTED: tones.neutral,
 };
 

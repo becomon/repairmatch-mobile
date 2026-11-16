@@ -63,7 +63,7 @@ export default function PublishPhotos() {
               accessibilityRole="button"
               accessibilityLabel={`Quitar foto ${i + 1}`}
               onPress={() => update({ photos: draft.photos.filter((_, idx) => idx !== i) })}
-              style={{ position: 'absolute', top: 6, right: 6, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(23,32,51,0.7)', alignItems: 'center', justifyContent: 'center' }}
+              style={{ position: 'absolute', top: 6, right: 6, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(31,26,22,0.7)', alignItems: 'center', justifyContent: 'center' }}
             >
               <Icon name="close" size={20} color="#ffffff" />
             </Pressable>

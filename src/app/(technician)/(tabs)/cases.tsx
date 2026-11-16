@@ -1,4 +1,7 @@
+import { useRouter } from 'expo-router';
 import { useUser } from '@/features/auth/AuthProvider';
+import { useNearbyDemand } from '@/features/technicians/demand';
+import { DemandLink } from '@/features/technicians/DemandChip';
 import { useCaseView } from '@/features/technicians/caseView';
 import { CaseList } from '@/features/technicians/CaseList';
 import { OpportunityCard } from '@/features/technicians/OpportunityCard';
@@ -10,6 +13,8 @@ import { Screen, ScreenHeader } from '@/shared/ui';
 /** "Para ti": open compatible requests ranked by distance, experience, freshness and competition. */
 export default function ForYouTab() {
   const user = useUser();
+  const router = useRouter();
+  const demand = useNearbyDemand();
   const list = usePagedList((page, signal) => techniciansApi.recommendedRequests(page, 10, { signal }), [], { refetchOnFocus: true });
   const view = useCaseView(list, (c) => ({ request: c.request, createdAt: c.createdAt, proposalCount: c.proposalCount, symptom: c.symptom, score: c.score }), {
     sorts: ['best', 'near', 'recent'],
@@ -19,7 +24,7 @@ export default function ForYouTab() {
     <Screen
       scroll={false}
       inTabs
-      header={<ScreenHeader title="Casos para ti" subtitle={`Hola, ${user.name.split(' ')[0]}${list.total ? ` · ${list.total} disponibles` : ''}`} />}
+      header={<ScreenHeader title="Casos para ti" subtitle={`Hola, ${user.name.split(' ')[0]}${list.total ? ` · ${list.total} disponibles` : ''}`} right={demand.ready ? <DemandLink count={demand.points.length} onPress={() => router.push('/account')} /> : undefined} />}
     >
       <CaseList
         list={view.list}

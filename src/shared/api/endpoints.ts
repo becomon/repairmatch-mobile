@@ -6,6 +6,8 @@ import type {
   CreateProposalBody,
   CreateRequestBody,
   CreateReviewBody,
+  IdentitySession,
+  IdentityState,
   MatchingRequest,
   Page,
   Proposal,
@@ -104,6 +106,13 @@ export const techniciansApi = {
   publicProfile: (id: string, o?: Opts) => api.request<TechnicianProfile>(`/technicians/${seg(id)}`, o),
   reputation: (id: string, o?: Opts) => api.request<TechnicianReputation>(`/technicians/${seg(id)}/reputation`, o),
   reviews: (id: string, o?: Opts) => api.request<Review[]>(`/technicians/${seg(id)}/reviews`, o),
+};
+
+// Identity verification (Didit) ---------------------------------------------
+
+export const identityApi = {
+  state: (o?: Opts) => api.request<IdentityState>('/verification/identity', o),
+  start: () => api.request<IdentitySession>('/verification/identity/session', { method: 'POST' }),
 };
 
 // Local AI -----------------------------------------------------------------

@@ -105,7 +105,7 @@ export function ServiceDetail({ id, role }: { id: number; role: Role }) {
         </View>
         {isClient ? (
           <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/technician/[id]', params: { id: s.technicianId } })} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text variant="smallStrong" color={colors.primary}>Ver perfil de {s.technicianName.split(' ')[0]}</Text>
+            <Text variant="smallStrong" color={colors.link}>Ver perfil de {s.technicianName.split(' ')[0]}</Text>
           </Pressable>
         ) : null}
       </Card>
@@ -121,7 +121,7 @@ export function ServiceDetail({ id, role }: { id: number; role: Role }) {
           return (
             <View key={step.status} style={{ flexDirection: 'row', gap: 12 }}>
               <View style={{ alignItems: 'center', width: 24 }}>
-                <View style={{ width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: done ? colors.success : current ? colors.primary : colors.border }}>
+                <View style={{ width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: done ? colors.fresh : current ? colors.primary : colors.border }}>
                   {done ? <Icon name="checkmark" size={16} color="#ffffff" /> : current ? <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#ffffff' }} /> : null}
                 </View>
                 {!last ? <View style={{ width: 2, flex: 1, minHeight: 28, backgroundColor: done ? colors.success : colors.border }} /> : null}

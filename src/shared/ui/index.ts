@@ -1,7 +1,10 @@
 export { Avatar } from './Avatar';
 export { Button } from './Button';
 export { Card } from './Card';
-export { FilterChip, InfoChip, StatusChip, tones, type Tone } from './Chip';
+export { FilterChip, IdentityPill, InfoChip, StatusChip, tones, VerifiedPill, type Tone } from './Chip';
+export { AiSearchBox } from './AiSearchBox';
+export { Reveal } from './Reveal';
+export { ScenePanel } from './ScenePanel';
 export { ConfirmDialog } from './ConfirmDialog';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';

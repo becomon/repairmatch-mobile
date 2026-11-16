@@ -1,10 +1,12 @@
 import type { ImagePickerAsset } from 'expo-image-picker';
+import { File } from 'expo-file-system';
 import { Platform } from 'react-native';
 import type { CreateEvidence } from './api';
 
 export async function uploadPhoto(photo: ImagePickerAsset): Promise<CreateEvidence> {
-  const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const preset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  // Public values (unsigned preset); env vars override them for other accounts.
+  const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || 'buwtlbce';
+  const preset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'repairmatch_unsigned';
   if (!cloudName || !/^[a-zA-Z0-9_-]+$/.test(cloudName) || !preset) {
     throw new Error("Primero configura el nombre de nube y el preset sin firma de Cloudinary.");
   }
@@ -16,12 +18,9 @@ export async function uploadPhoto(photo: ImagePickerAsset): Promise<CreateEviden
     if (!photo.file) throw new Error("No se pudo leer la imagen seleccionada.");
     body.append('file', photo.file);
   } else {
-    // React Native FormData accepts a local URI instead of a browser Blob.
-    body.append('file', {
-      uri: photo.uri,
-      type: photo.mimeType || 'image/jpeg',
-      name: photo.fileName || 'evidence.jpg',
-    } as unknown as Blob);
+    // SDK 58's fetch rejects the old `{ uri, type, name }` object ("Unsupported FormDataPart
+    // implementation"); expo-file-system's File is a real Blob that FormData accepts.
+    body.append('file', new File(photo.uri), photo.fileName || 'evidence.jpg');
   }
   body.append('upload_preset', preset);
   const controller = new AbortController();

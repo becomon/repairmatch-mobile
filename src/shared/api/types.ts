@@ -28,6 +28,22 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  /** Passed the optional Didit identity verification. */
+  identityVerified?: boolean;
+}
+
+export type IdentityStatus = 'NOT_STARTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+
+/** GET /verification/identity. */
+export interface IdentityState {
+  status: IdentityStatus;
+  verifiedAt: LocalDateTimeString | null;
+}
+
+/** POST /verification/identity/session: open `url` to verify. */
+export interface IdentitySession {
+  url: string;
+  status: IdentityStatus;
 }
 
 export interface RegisterBody {
@@ -93,6 +109,8 @@ export interface Proposal {
   conditions: string;
   createdAt: LocalDateTimeString;
   status: ProposalStatus;
+  /** The technician passed identity verification (show the badge). */
+  identityVerified?: boolean;
 }
 
 export interface CreateProposalBody {
@@ -131,6 +149,11 @@ export interface MatchingRequest {
   description: string;
   status: RequestStatus;
   distanceKm: number;
+  /** The client who published it passed identity verification. */
+  clientIdentityVerified?: boolean;
+  /** Request location snapped to a ~550 m grid; null when the request has no location. Never the exact point. */
+  approxLatitude?: number | null;
+  approxLongitude?: number | null;
 }
 
 export interface RecommendedRequest {
@@ -181,6 +204,7 @@ export interface TechnicianProfile {
   longitude?: number;
   maxRadiusKm?: number;
   applianceTypes: string[];
+  identityVerified?: boolean;
 }
 
 export interface TechnicianProfileUpdate {

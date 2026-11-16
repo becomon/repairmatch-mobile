@@ -5,10 +5,10 @@ import { Text } from './Text';
 
 /** `★ 4.9 (38 reseñas)`; shows "Nuevo" when there are no reviews. */
 export function RatingSummary({ average, count }: { average: number; count: number }) {
-  if (count === 0) return <Text variant="small" color={colors.textMuted}>★ Nuevo · sin reseñas</Text>;
+  if (count === 0) return <Text variant="small" color={colors.textMuted}>Nuevo · sin reseñas</Text>;
   return (
     <Text variant="small" color={colors.textMuted}>
-      ★ {average.toFixed(1)} ({count} {count === 1 ? 'reseña' : 'reseñas'})
+      <Text variant="smallStrong" color={colors.sun}>★ {average.toFixed(1)}</Text> ({count} {count === 1 ? 'reseña' : 'reseñas'})
     </Text>
   );
 }
@@ -18,7 +18,7 @@ export function Stars({ value, size = 16 }: { value: number; size?: number }) {
   return (
     <View style={styles.row} accessibilityLabel={`${value} de 5 estrellas`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <Icon key={n} name={n <= Math.round(value) ? 'star' : 'star-outline'} size={size} color={colors.accent} />
+        <Icon key={n} name={n <= Math.round(value) ? 'star' : 'star-outline'} size={size} color={colors.sun} />
       ))}
     </View>
   );
@@ -37,7 +37,7 @@ export function StarInput({ value, onChange }: { value: number; onChange: (n: nu
           onPress={() => onChange(n)}
           style={styles.starHit}
         >
-          <Icon name={n <= value ? 'star' : 'star-outline'} size={36} color={colors.accent} />
+          <Icon name={n <= value ? 'star' : 'star-outline'} size={36} color={colors.sun} />
         </Pressable>
       ))}
     </View>

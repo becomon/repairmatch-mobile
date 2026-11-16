@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUser } from '@/features/auth/AuthProvider';
-import { ApplianceTile } from '@/features/requests/ApplianceTile';
 import { useDraft } from '@/features/requests/draft';
 import { RequestCard } from '@/features/requests/RequestCard';
 import { ServiceCard } from '@/features/services/ServiceCard';
@@ -10,7 +9,7 @@ import { applianceLabel } from '@/features/catalog/appliances';
 import { listApplianceTypes, requestsApi, servicesApi } from '@/shared/api/endpoints';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { colors, radius } from '@/shared/theme';
-import { Button, Card, EmptyState, ErrorState, Icon, LoadingState, Screen, SectionHeader, Text, TextField } from '@/shared/ui';
+import { AiSearchBox, Button, Card, EmptyState, ErrorState, Icon, LoadingState, Reveal, ScenePanel, Screen, SectionHeader, Text } from '@/shared/ui';
 
 const MIN_CHARS = 10;
 
@@ -45,29 +44,30 @@ export default function ClientHome() {
   }
 
   return (
-    <Screen inTabs onRefresh={() => { types.refetch(); withOffers.refetch(); published.refetch(); services.refetch(); }} refreshing={(types.loading && !!types.data) || (withOffers.loading && !!withOffers.data) || (published.loading && !!published.data)}>
+    <Screen inTabs band="mint" onRefresh={() => { types.refetch(); withOffers.refetch(); published.refetch(); services.refetch(); }} refreshing={(types.loading && !!types.data) || (withOffers.loading && !!withOffers.data) || (published.loading && !!published.data)}>
       <View style={{ gap: 2, paddingTop: 8 }}>
         <Text variant="small" color={colors.textMuted}>Hola, {user.name.split(' ')[0]}</Text>
         <Text variant="display">¿Qué se malogró?</Text>
       </View>
 
-      <Card style={{ gap: 12 }}>
+      <Reveal index={1}>
+      <Card glow style={{ gap: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Icon name="sparkles" size={20} color={colors.primary} />
           <Text variant="bodyStrong" style={{ flex: 1 }}>Cuéntanos la falla</Text>
-          <View style={{ backgroundColor: colors.primarySoft, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 3 }}>
-            <Text variant="caption" color={colors.primary}>IA</Text>
+          <View style={{ backgroundColor: colors.freshSoft, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 3 }}>
+            <Text variant="caption" color={colors.freshStrong}>IA</Text>
           </View>
         </View>
-        <TextField
+        <AiSearchBox
           label="Descripción"
           value={text}
           onChangeText={setText}
-          placeholder="Describe la falla… ej. mi refri Samsung dejó de enfriar desde ayer"
+          placeholder="ej. 'Mi lavadora hace ruido y no bota agua'"
           multiline
           maxLength={5000}
         />
-        <Button label="Entender mi problema" icon="sparkles" onPress={analyse} disabled={!canAnalyse} accessibilityHint="Prepara tu solicitud con la descripción" />
+        <Button label="Entender mi problema" icon="sparkles" sweep onPress={analyse} disabled={!canAnalyse} accessibilityHint="Prepara tu solicitud con la descripción" />
         <Button
           label="Buscar en mis solicitudes"
           icon="search"
@@ -76,6 +76,7 @@ export default function ClientHome() {
           disabled={text.trim().length < 3}
         />
       </Card>
+      </Reveal>
 
       <SectionHeader title="O elige tu equipo" />
       {types.initialLoading ? (
@@ -84,14 +85,14 @@ export default function ClientHome() {
         <ErrorState error={types.error} onRetry={types.refetch} />
       ) : (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-          {(types.data ?? []).map((t) => (
-            <View key={t.id} style={{ width: '48%', flexGrow: 1 }}>
+          {(types.data ?? []).map((t, i) => (
+            <Reveal key={t.id} index={i + 2} style={{ width: '48%', flexGrow: 1 }}>
               <Card onPress={() => startWith(t.id)} accessibilityLabel={`Publicar solicitud de ${applianceLabel(t.name)}`} style={{ gap: 10 }}>
-                <ApplianceTile name={t.name} size={56} />
+                <ScenePanel name={t.name} height={84} />
                 <Text variant="heading" numberOfLines={2}>{applianceLabel(t.name)}</Text>
                 <Text variant="small" color={colors.textMuted}>Publicar solicitud</Text>
               </Card>
-            </View>
+            </Reveal>
           ))}
         </View>
       )}
@@ -105,8 +106,8 @@ export default function ClientHome() {
         <EmptyState icon="construct-outline" title="Sin solicitudes activas" message="Cuando publiques una falla, la verás aquí con sus propuestas." />
       ) : (
         <View style={{ gap: 10 }}>
-          {active.map((r) => (
-            <RequestCard key={r.id} request={r} />
+          {active.map((r, i) => (
+            <Reveal key={r.id} index={i}><RequestCard request={r} /></Reveal>
           ))}
         </View>
       )}
