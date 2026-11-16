@@ -29,7 +29,7 @@ export interface Demand {
 }
 
 /** Merges both lists (dedupe by requestId) and keeps requests with an approximate point. */
-export function collectDemand(lists: ReadonlyArray<readonly MatchingRequest[] | undefined>): DemandPoint[] {
+export function collectDemand(lists: readonly (readonly MatchingRequest[] | undefined)[]): DemandPoint[] {
   const seen = new Map<number, DemandPoint>();
   for (const list of lists) {
     for (const r of list ?? []) {

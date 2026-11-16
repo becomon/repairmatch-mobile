@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, Easing, StyleSheet, TextInput, View, type LayoutChangeEvent, type TextInputProps } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, fonts, gradients, radius } from '../theme';
@@ -23,8 +23,8 @@ export function AiSearchBox({ label, multiline, ...rest }: Props) {
   const reduce = useReduceMotion();
   const [focused, setFocused] = useState(false);
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const spin = useRef(new Animated.Value(0)).current;
-  const swap = useRef(new Animated.Value(0)).current;
+  const [spin] = useState(() => new Animated.Value(0));
+  const [swap] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (reduce) return;

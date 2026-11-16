@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import { Animated, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, gradients, radius, shadow } from '../theme';
@@ -17,7 +17,7 @@ interface Props {
 
 /** Surface card. When pressable it scales to 0.98 and lifts its shadow, like web `.spot-card`. */
 export function Card({ children, onPress, style, highlight, glow, accessibilityLabel }: Props) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const [scale] = useState(() => new Animated.Value(1));
   const base = [styles.card, highlight ? styles.highlight : null, style];
   const face = glow ? (
     <LinearGradient colors={gradients.cardGlow} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={styles.face} pointerEvents="none" />
@@ -63,5 +63,5 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   highlight: { borderWidth: 2, borderColor: colors.fresh, shadowColor: colors.fresh, shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 6 } },
-  face: { ...StyleSheet.absoluteFillObject, borderRadius: radius.card - 1 },
+  face: { ...StyleSheet.absoluteFill, borderRadius: radius.card - 1 },
 });

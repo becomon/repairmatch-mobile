@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import { useReduceMotion } from './motion';
 
@@ -12,7 +12,7 @@ interface Props {
 /** Soft expanding ring, like the web `ai-pulse` keyframes. Static and invisible with reduced motion. */
 export function PulseRing({ color, borderRadius, strength = 0.35 }: Props) {
   const reduce = useReduceMotion();
-  const t = useRef(new Animated.Value(0)).current;
+  const [t] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (reduce) return;
@@ -39,5 +39,5 @@ export function PulseRing({ color, borderRadius, strength = 0.35 }: Props) {
 }
 
 const styles = StyleSheet.create({
-  ring: { ...StyleSheet.absoluteFillObject, borderWidth: 2 },
+  ring: { ...StyleSheet.absoluteFill, borderWidth: 2 },
 });

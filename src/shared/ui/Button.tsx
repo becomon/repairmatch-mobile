@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Animated, Easing, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, TOUCH } from '../theme';
@@ -32,7 +32,7 @@ const palette: Record<Variant, { bg: string; fg: string; border: string }> = {
 
 function Shine({ width }: { width: number }) {
   const reduce = useReduceMotion();
-  const t = useRef(new Animated.Value(0)).current;
+  const [t] = useState(() => new Animated.Value(0));
   useEffect(() => {
     if (reduce) return;
     const loop = Animated.loop(Animated.timing(t, { toValue: 1, duration: 4500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }));

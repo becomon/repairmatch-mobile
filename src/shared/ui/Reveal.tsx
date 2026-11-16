@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, type ViewStyle } from 'react-native';
 import { easeOutSoft, useReduceMotion } from './motion';
 
@@ -15,7 +15,7 @@ const MAX_STEPS = 8;
 /** Entrance: fade in while rising 24pt, 600ms ease-out (web `.reveal`). Staggered by `index`. */
 export function Reveal({ children, index = 0, style }: Props) {
   const reduce = useReduceMotion();
-  const progress = useRef(new Animated.Value(0)).current;
+  const [progress] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (reduce) {
