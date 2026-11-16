@@ -36,7 +36,7 @@ export function OpportunityCard({ request, timeLabel, reasons = [], symptom, pro
         </View>
         <InfoChip label={formatDistance(request.distanceKm)} />
       </View>
-      {request.clientIdentityVerified ? <IdentityPill label="Cliente verificado" /> : null}
+      {request.clientIdentityVerified ? <IdentityPill label="Cliente verificado" nameMatches={request.clientIdentityNameMatches} /> : null}
       <Text variant="small" color={colors.textSoft} numberOfLines={3}>«{request.description}»</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {reasons.slice(0, 3).map((reason) => (

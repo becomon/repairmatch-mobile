@@ -30,6 +30,8 @@ export interface User {
   role: Role;
   /** Passed the optional Didit identity verification. */
   identityVerified?: boolean;
+  /** Profile name matches the verified document (null/omitted: unknown). */
+  identityNameMatches?: boolean | null;
 }
 
 export type IdentityStatus = 'NOT_STARTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
@@ -38,6 +40,8 @@ export type IdentityStatus = 'NOT_STARTED' | 'PENDING' | 'VERIFIED' | 'REJECTED'
 export interface IdentityState {
   status: IdentityStatus;
   verifiedAt: LocalDateTimeString | null;
+  /** Profile name matches the verified document (null/omitted: unknown). */
+  nameMatches?: boolean | null;
 }
 
 /** POST /verification/identity/session: open `url` to verify. */
@@ -111,6 +115,8 @@ export interface Proposal {
   status: ProposalStatus;
   /** The technician passed identity verification (show the badge). */
   identityVerified?: boolean;
+  /** The technician's profile name matches the verified document (null: unknown). */
+  identityNameMatches?: boolean | null;
 }
 
 export interface CreateProposalBody {
@@ -151,6 +157,8 @@ export interface MatchingRequest {
   distanceKm: number;
   /** The client who published it passed identity verification. */
   clientIdentityVerified?: boolean;
+  /** The client's profile name matches their verified document (null: unknown). */
+  clientIdentityNameMatches?: boolean | null;
   /** Request location snapped to a ~550 m grid; null when the request has no location. Never the exact point. */
   approxLatitude?: number | null;
   approxLongitude?: number | null;
@@ -205,6 +213,7 @@ export interface TechnicianProfile {
   maxRadiusKm?: number;
   applianceTypes: string[];
   identityVerified?: boolean;
+  identityNameMatches?: boolean | null;
 }
 
 export interface TechnicianProfileUpdate {

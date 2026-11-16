@@ -36,7 +36,7 @@ export function ProfileEditor({ profile, types, rating, onSaved }: Props) {
         <Text variant="heading">{user.name}</Text>
         <Text variant="small" color={colors.textMuted}>{user.email}</Text>
         {rating ? <RatingSummary average={rating.averageRating} count={rating.reviewCount} /> : null}
-        {profile.identityVerified ? <View><IdentityPill /></View> : null}
+        {profile.identityVerified ? <View><IdentityPill nameMatches={profile.identityNameMatches} /></View> : null}
       </Card>
 
       <IdentityCard />

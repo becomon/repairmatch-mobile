@@ -25,7 +25,7 @@ export default function TechnicianPublicProfile() {
       <Card style={{ alignItems: 'center', gap: 8, paddingVertical: 24 }}>
         <Avatar name={p.fullName} size={72} />
         <Text variant="title">{p.fullName}</Text>
-        {p.identityVerified ? <View><IdentityPill /></View> : null}
+        {p.identityVerified ? <View><IdentityPill nameMatches={p.identityNameMatches} /></View> : null}
         <Text variant="small" color={colors.textMuted}>
           Técnico{p.experienceYears !== undefined ? ` · ${p.experienceYears} ${p.experienceYears === 1 ? 'año' : 'años'} de experiencia` : ''}
         </Text>

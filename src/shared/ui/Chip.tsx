@@ -87,14 +87,29 @@ const styles = StyleSheet.create({
   filterOff: { backgroundColor: colors.surface, borderColor: colors.border },
 });
 
-/** Soft emerald "Identidad verificada" pill with a shield: a trust hint from Didit, never a gate. */
-export function IdentityPill({ label = 'Identidad verificada' }: { label?: string }) {
-  return (
-    <View style={styles.identity} accessibilityLabel={label}>
+export const NAME_MISMATCH_NOTE = 'El nombre del perfil no coincide con su documento';
+
+/**
+ * Soft emerald "Identidad verificada" pill with a shield: a trust hint from Didit, never a gate.
+ * When `nameMatches === false` the profile name differs from the verified document, so it only claims
+ * "Persona verificada" and adds a muted note. `true` and null/undefined (unknown) keep the regular label.
+ */
+export function IdentityPill({ label = 'Identidad verificada', nameMatches }: { label?: string; nameMatches?: boolean | null | undefined }) {
+  const mismatch = nameMatches === false;
+  const shown = mismatch ? 'Persona verificada' : label;
+  const pill = (
+    <View style={styles.identity} accessibilityLabel={mismatch ? `${shown}. ${NAME_MISMATCH_NOTE}` : shown}>
       <Icon name="shield-checkmark" size={13} color={colors.freshStrong} />
       <Text variant="caption" color={colors.freshStrong} numberOfLines={1}>
-        {label}
+        {shown}
       </Text>
+    </View>
+  );
+  if (!mismatch) return pill;
+  return (
+    <View style={{ alignSelf: 'flex-start', gap: 2 }}>
+      {pill}
+      <Text variant="small" color={colors.textMuted}>{NAME_MISMATCH_NOTE}</Text>
     </View>
   );
 }
