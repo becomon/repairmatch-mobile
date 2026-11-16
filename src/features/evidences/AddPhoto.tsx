@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, StyleSheet, View } from 'react-native';
+import { Button, Text } from '@/shared/ui';
+import { colors } from '@/shared/theme';
 import type { ImagePickerAsset } from 'expo-image-picker';
 import type { CreateEvidence, Evidence, EvidenceApi } from './api';
 import { pickPhoto } from './pickPhoto';
@@ -15,7 +17,7 @@ interface Props {
 export function AddPhoto(props: Props) {
   const [expanded, setExpanded] = useState(false);
   return expanded ? <PhotoForm key={props.requestId} {...props} /> : (
-    <Button title="Agregar foto" onPress={() => setExpanded(true)} />
+    <View style={styles.collapsed}><Button label="Agregar foto" icon="camera" variant="secondary" onPress={() => setExpanded(true)} /></View>
   );
 }
 
@@ -81,21 +83,20 @@ function PhotoForm({ requestId, evidenceApi, onAdded }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Agregar foto</Text>
-      <Text>Fotografía el electrodoméstico o selecciona una imagen. Sube solo las fotos que quieras compartir en esta solicitud.</Text>
-      <Button title="Tomar foto" disabled={busy} onPress={() => void choose('camera')} />
-      <Button title="Elegir de la galería" disabled={busy} onPress={() => void choose('gallery')} />
+      <Text variant="heading">Agregar foto</Text>
+      <Text variant="small" color={colors.textMuted}>Fotografía el electrodoméstico o selecciona una imagen. Sube solo las fotos que quieras compartir en esta solicitud.</Text>
+      {Platform.OS !== 'web' ? <Button label="Tomar foto" icon="camera" disabled={busy} onPress={() => void choose('camera')} /> : null}
+      <Button label={Platform.OS === 'web' ? 'Elegir foto' : 'Elegir de la galería'} icon="images" variant="secondary" disabled={busy} onPress={() => void choose('gallery')} />
       {photo && <Image source={{ uri: photo.uri }} style={styles.preview} accessibilityLabel="Vista previa del electrodoméstico" />}
-      {photo && <Button title={busy ? "Espera un momento…" : "Subir y guardar foto"} disabled={busy} onPress={() => void save()} />}
-      {!!message && <Text accessibilityLiveRegion="polite">{message}</Text>}
-      {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
+      {photo && <Button label="Subir y guardar foto" loading={busy} onPress={() => void save()} />}
+      {!!message && <Text variant="small" accessibilityLiveRegion="polite">{message}</Text>}
+      {!!error && <Text variant="small" accessibilityRole="alert" color={colors.danger}>{error}</Text>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { padding: 16, gap: 12 },
-  heading: { fontSize: 22, fontWeight: 'bold' },
+  collapsed: { padding: 12 },
   preview: { width: '100%', height: 220, resizeMode: 'contain' },
-  error: { color: '#b91c1c' },
 });
