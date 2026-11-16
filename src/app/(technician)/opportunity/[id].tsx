@@ -1,57 +1,18 @@
-import { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ApplianceTile } from '@/features/requests/ApplianceTile';
-import { opportunityTitle } from '@/features/technicians/OpportunityCard';
-import { ApiError, friendlyError } from '@/shared/api/errors';
-import { proposalsApi } from '@/shared/api/endpoints';
-import type { MatchingRequest } from '@/shared/api/types';
-import { formatDistance, formatMoney, toLocalDateTime } from '@/shared/format';
-import { colors, GUTTER } from '@/shared/theme';
-import { Banner, Button, Card, EmptyState, FilterChip, Screen, ScreenHeader, Text, TextField } from '@/shared/ui';
-
-const HOURS = [8, 10, 12, 14, 16, 18];
-const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-
-function parseOpportunity(raw: string | undefined): MatchingRequest | null {
-  if (!raw) return null;
-  try {
-    const value = JSON.parse(raw) as Partial<MatchingRequest>;
-    return typeof value.requestId === 'number' && typeof value.description === 'string' ? (value as MatchingRequest) : null;
-  } catch {
-    return null;
-  }
-}
-
-function dayLabel(offset: number, date: Date) {
-  if (offset === 0) return 'Hoy';
-  if (offset === 1) return 'Mañana';
-  return `${DAY_NAMES[date.getDay()]} ${date.getDate()}`;
-}
+import { ApplianceTile } from '@/features/catalog';
+import { MAX_CONDITIONS_CHARS, ProposalScheduleFields, useSubmitProposal } from '@/features/proposals';
+import { opportunityTitle, parseOpportunity } from '@/features/technicians';
+import { formatDistance, formatMoney } from '@/shared/format';
+import { colors } from '@/shared/theme';
+import { Banner, Button, Card, EmptyState, Screen, ScreenHeader, Text, TextField } from '@/shared/ui';
 
 /** Send a proposal: diagnostic cost, when the technician can go, and conditions. */
 export default function SendProposal() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string; data?: string }>();
-  const requestId = Number(params.id);
   const opportunity = parseOpportunity(params.data);
-
-  const days = useMemo(() => {
-    const base = new Date();
-    return Array.from({ length: 7 }, (_, offset) => {
-      const d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + offset);
-      return { offset, date: d, label: dayLabel(offset, d) };
-    });
-  }, []);
-
-  const [cost, setCost] = useState('');
-  const [dayOffset, setDayOffset] = useState(1);
-  const [hour, setHour] = useState(10);
-  const [conditions, setConditions] = useState('');
-  const [errors, setErrors] = useState<{ cost?: string; when?: string; conditions?: string }>({});
-  const [formError, setFormError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
+  const form = useSubmitProposal(Number(params.id));
 
   const header = <ScreenHeader title="Enviar propuesta" back fallbackHref="/cases" />;
   if (!opportunity) {
@@ -62,7 +23,7 @@ export default function SendProposal() {
     );
   }
 
-  if (sent) {
+  if (form.sent) {
     return (
       <Screen header={<ScreenHeader title="Propuesta enviada" />}>
         <EmptyState icon="checkmark-circle-outline" title="¡Propuesta enviada!" message="El cliente la comparará con las de otros técnicos. Sigue su estado en Mi trabajo." actionLabel="Ver mis propuestas" onAction={() => router.replace('/work')} />
@@ -70,33 +31,8 @@ export default function SendProposal() {
     );
   }
 
-  async function submit() {
-    const amount = Number(cost.replace(',', '.'));
-    const availableAt = new Date(days[dayOffset]!.date.getFullYear(), days[dayOffset]!.date.getMonth(), days[dayOffset]!.date.getDate(), hour, 0, 0);
-    const next = {
-      cost: cost.trim() === '' || !Number.isFinite(amount) || amount < 0 ? 'Escribe un costo válido, por ejemplo 30.' : amount > 99999999 ? 'El costo es demasiado alto.' : undefined,
-      when: availableAt.getTime() <= Date.now() ? 'Elige un horario que aún no pasó.' : undefined,
-      conditions: conditions.trim() === '' ? 'Cuéntale al cliente qué incluye tu visita.' : undefined,
-    };
-    setErrors(next);
-    setFormError('');
-    if (next.cost || next.when || next.conditions) return;
-    setBusy(true);
-    try {
-      await proposalsApi.submit(requestId, { diagnosticCost: Math.round(amount * 100) / 100, availableAt: toLocalDateTime(availableAt), conditions: conditions.trim() });
-      setSent(true);
-    } catch (cause) {
-      if (cause instanceof ApiError && cause.status === 409) setFormError('Ya enviaste una propuesta a este caso o el cliente ya cerró la solicitud.');
-      else if (cause instanceof ApiError && cause.status === 403) setFormError('Este caso ya no es compatible con tu perfil o tu zona de atención.');
-      else setFormError(friendlyError(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const preview = Number(cost.replace(',', '.'));
   return (
-    <Screen header={header} footer={<Button label="Enviar propuesta" onPress={() => void submit()} loading={busy} />}>
+    <Screen header={header} footer={<Button label="Enviar propuesta" onPress={() => void form.submit()} loading={form.busy} />}>
       <Card style={{ gap: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <ApplianceTile name={opportunity.applianceTypeName} />
@@ -108,40 +44,34 @@ export default function SendProposal() {
         <Text variant="small" color={colors.textSoft}>«{opportunity.description}»</Text>
       </Card>
 
-      {formError ? <Banner tone="danger" message={formError} /> : null}
+      {form.formError ? <Banner tone="danger" message={form.formError} /> : null}
 
       <TextField
         label="Costo de visita y diagnóstico (S/)"
-        value={cost}
-        onChangeText={setCost}
-        error={errors.cost}
+        value={form.cost}
+        onChangeText={form.setCost}
+        error={form.errors.cost}
         keyboardType="decimal-pad"
         placeholder="30"
-        hint={Number.isFinite(preview) && cost.trim() !== '' && preview >= 0 ? `El cliente verá ${formatMoney(preview)}` : undefined}
+        hint={form.costPreview !== null ? `El cliente verá ${formatMoney(form.costPreview)}` : undefined}
       />
 
-      <View style={{ gap: 8 }}>
-        <Text variant="smallStrong" color={colors.textSoft}>Puedo ir</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: GUTTER }} style={{ marginHorizontal: -GUTTER, flexGrow: 0 }}>
-          {days.map((d) => (
-            <FilterChip key={d.offset} label={d.label} selected={dayOffset === d.offset} onPress={() => setDayOffset(d.offset)} />
-          ))}
-        </ScrollView>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: GUTTER }} style={{ marginHorizontal: -GUTTER, flexGrow: 0 }}>
-          {HOURS.map((h) => (
-            <FilterChip key={h} label={`${h}:00`} selected={hour === h} disabled={dayOffset === 0 && h <= new Date().getHours()} onPress={() => setHour(h)} />
-          ))}
-        </ScrollView>
-        {errors.when ? <Text variant="small" color={colors.danger}>{errors.when}</Text> : null}
-      </View>
+      <ProposalScheduleFields
+        days={form.days}
+        dayOffset={form.dayOffset}
+        hour={form.hour}
+        onDayChange={form.setDayOffset}
+        onHourChange={form.setHour}
+        error={form.errors.when}
+      />
 
       <TextField
         label="Mensaje y condiciones"
-        value={conditions}
-        onChangeText={setConditions}
-        error={errors.conditions}
+        value={form.conditions}
+        onChangeText={form.setConditions}
+        error={form.errors.conditions}
         multiline
-        maxLength={1000}
+        maxLength={MAX_CONDITIONS_CHARS}
         placeholder="El costo cubre visita y diagnóstico. Los repuestos se cotizan aparte."
       />
       <Text variant="small" color={colors.textMuted}>El cliente compara tu propuesta con las de otros técnicos.</Text>
