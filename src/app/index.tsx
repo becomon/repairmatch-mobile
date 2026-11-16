@@ -1,7 +1,6 @@
 import { Redirect } from 'expo-router';
 import { View } from 'react-native';
-import { HOME_BY_ROLE } from '@/features/auth/RoleGate';
-import { useAuth } from '@/features/auth/AuthProvider';
+import { HOME_BY_ROLE, useAuth } from '@/features/auth';
 import { colors } from '@/shared/theme';
 import { LoadingState } from '@/shared/ui';
 

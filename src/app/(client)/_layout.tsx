@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
-import { RoleGate } from '@/features/auth/RoleGate';
-import { DraftProvider } from '@/features/requests/draft';
+import { RoleGate } from '@/features/auth';
+import { DraftProvider } from '@/features/requests';
 import { colors } from '@/shared/theme';
 
 export default function ClientLayout() {

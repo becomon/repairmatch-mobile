@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 import type { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/shared/theme';
+import { foldText } from '@/shared/text';
 
 export type ApplianceIconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -41,7 +42,7 @@ const RULES: Rule[] = [
   { kind: 'microwave', test: /micro/, label: 'Microondas', icon: 'microwave', fg: colors.warning, bg: colors.warningSoft },
   { kind: 'dishwasher', test: /dishwasher|lavavaj/, label: 'Lavavajillas', icon: 'dishwasher', fg: colors.slate, bg: colors.surface2 },
   { kind: 'washer', test: /washing|washer|lavad/, label: 'Lavadora', icon: 'washing-machine', fg: colors.freshStrong, bg: colors.freshSoft },
-  { kind: 'dryer', test: /dryer|secad/, label: 'Secadora', icon: 'tumble-dryer', fg: colors.slate, bg: '#e3eae6' },
+  { kind: 'dryer', test: /dryer|secad/, label: 'Secadora', icon: 'tumble-dryer', fg: colors.slate, bg: colors.sage },
   { kind: 'fridge', test: /refri|fridge|nevera|frigor/, label: 'Refrigeradora', icon: 'fridge', fg: colors.primary, bg: colors.primarySoft },
   { kind: 'oven', test: /oven|horno|stove|cocina/, label: 'Horno', icon: 'stove', fg: colors.danger, bg: colors.dangerSoft },
 ];
@@ -53,17 +54,9 @@ const FALLBACK: Omit<ApplianceVisual, 'label'> = {
   bg: colors.neutralSoft,
 };
 
-function fold(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
 /** Icon, colours and Spanish label for a catalog name. Unknown names keep their raw text. */
 export function applianceVisual(name: string): ApplianceVisual {
-  const key = fold(name);
+  const key = foldText(name);
   const rule = RULES.find((r) => r.test.test(key));
   if (rule) return { kind: rule.kind, label: rule.label, icon: rule.icon, fg: rule.fg, bg: rule.bg };
   return { ...FALLBACK, label: name.trim() || 'Equipo' };

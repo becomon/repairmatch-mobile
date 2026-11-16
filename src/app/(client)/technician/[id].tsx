@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { applianceLabel } from '@/features/catalog/appliances';
+import { applianceLabel } from '@/features/catalog';
 import { techniciansApi } from '@/shared/api/endpoints';
 import { formatDay } from '@/shared/format';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';

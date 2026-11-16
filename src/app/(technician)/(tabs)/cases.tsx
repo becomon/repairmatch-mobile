@@ -1,11 +1,8 @@
 import { useRouter } from 'expo-router';
-import { useUser } from '@/features/auth/AuthProvider';
-import { useNearbyDemand } from '@/features/technicians/demand';
-import { DemandLink } from '@/features/technicians/DemandChip';
-import { useCaseView } from '@/features/technicians/caseView';
-import { CaseList } from '@/features/technicians/CaseList';
-import { OpportunityCard } from '@/features/technicians/OpportunityCard';
+import { useUser } from '@/features/auth';
+import { CaseList, DemandLink, OpportunityCard, useCaseView, useNearbyDemand } from '@/features/technicians';
 import { techniciansApi } from '@/shared/api/endpoints';
+import { LIST_PAGE_SIZE } from '@/shared/constants';
 import { timeAgo } from '@/shared/format';
 import { usePagedList } from '@/shared/hooks/usePagedList';
 import { Screen, ScreenHeader } from '@/shared/ui';
@@ -15,7 +12,7 @@ export default function ForYouTab() {
   const user = useUser();
   const router = useRouter();
   const demand = useNearbyDemand();
-  const list = usePagedList((page, signal) => techniciansApi.recommendedRequests(page, 10, { signal }), [], { refetchOnFocus: true });
+  const list = usePagedList((page, signal) => techniciansApi.recommendedRequests(page, LIST_PAGE_SIZE, { signal }), [], { refetchOnFocus: true });
   const view = useCaseView(list, (c) => ({ request: c.request, createdAt: c.createdAt, proposalCount: c.proposalCount, symptom: c.symptom, score: c.score }), {
     sorts: ['best', 'near', 'recent'],
     recommended: true,

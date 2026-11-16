@@ -4,10 +4,9 @@ import type { Proposal } from '@/shared/api/types';
 import { formatMoney, formatWhen } from '@/shared/format';
 import { colors } from '@/shared/theme';
 import { Card, Icon, InfoChip, StatusChip, Text } from '@/shared/ui';
-import { ApplianceTile } from '../requests/ApplianceTile';
-import { requestTitle } from '../requests/RequestCard';
-import { PROPOSAL_STATUS_LABEL, PROPOSAL_STATUS_TONE } from '../requests/status';
-import { useRequestSummary } from '../requests/useRequestSummary';
+import { ApplianceTile } from '@/features/catalog';
+import { requestTitle, useRequestSummary } from '@/features/requests';
+import { PROPOSAL_STATUS_LABEL, PROPOSAL_STATUS_TONE } from './status';
 
 interface Props {
   proposal: Proposal;

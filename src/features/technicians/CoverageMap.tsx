@@ -72,7 +72,7 @@ export function CoverageMap({ latitude, longitude, radiusKm, onPinMoved, demand,
         rotateEnabled={false}
         pitchEnabled={false}
       >
-        <Circle center={center} radius={radiusKm * 1000} strokeColor={colors.primary} strokeWidth={2} fillColor="rgba(201,74,20,0.14)" />
+        <Circle center={center} radius={radiusKm * 1000} strokeColor={colors.primary} strokeWidth={2} fillColor={colors.coverageFill} />
         {points.flatMap((p) => {
           const at: LatLng = { latitude: p.latitude, longitude: p.longitude };
           return [

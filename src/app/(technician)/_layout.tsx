@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { RoleGate } from '@/features/auth/RoleGate';
+import { RoleGate } from '@/features/auth';
 import { colors } from '@/shared/theme';
 
 export default function TechnicianLayout() {

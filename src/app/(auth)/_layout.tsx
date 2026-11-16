@@ -1,6 +1,5 @@
 import { Redirect, Stack } from 'expo-router';
-import { HOME_BY_ROLE } from '@/features/auth/RoleGate';
-import { useAuth } from '@/features/auth/AuthProvider';
+import { HOME_BY_ROLE, useAuth } from '@/features/auth';
 import { colors } from '@/shared/theme';
 
 export default function AuthLayout() {

@@ -1,4 +1,4 @@
-import { ServiceList } from '@/features/services/ServiceList';
+import { ServiceList } from '@/features/services';
 import { Screen, ScreenHeader } from '@/shared/ui';
 
 export default function ClientServicesTab() {

@@ -1,4 +1,5 @@
-const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+/** Short weekday names, Sunday first (the order of `Date.getDay()`). */
+export const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -17,7 +18,7 @@ export function formatMoney(value: number): string {
 export function formatWhen(value: string): string {
   const d = parseLocal(value);
   if (Number.isNaN(d.getTime())) return '';
-  return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} · ${d.getHours()}:${pad(d.getMinutes())}`;
+  return `${WEEKDAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} · ${d.getHours()}:${pad(d.getMinutes())}`;
 }
 
 /** `13 nov` */

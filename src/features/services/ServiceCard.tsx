@@ -1,23 +1,24 @@
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ApplianceTile } from '@/features/catalog';
+import { requestTitle, useRequestSummary } from '@/features/requests';
 import type { Role, Service } from '@/shared/api/types';
 import { formatDay } from '@/shared/format';
 import { colors } from '@/shared/theme';
 import { Card, StatusChip, Text } from '@/shared/ui';
-import { ApplianceTile } from '../requests/ApplianceTile';
-import { requestTitle } from '../requests/RequestCard';
-import { useRequestSummary } from '../requests/useRequestSummary';
-import { SERVICE_STATUS_LABEL, SERVICE_STATUS_TONE } from '../requests/status';
 import { ServiceActions } from './ServiceActions';
+import { SERVICE_STATUS_LABEL, SERVICE_STATUS_TONE } from './status';
 
 interface Props {
   service: Service;
   role: Role;
   onChanged: (service: Service) => void;
+  /** A status change failed; the list should reload. */
+  onFailed?: () => void;
 }
 
 /** Row in the services lists. The appliance name comes from the request; the card works without it. */
-export function ServiceCard({ service, role, onChanged }: Props) {
+export function ServiceCard({ service, role, onChanged, onFailed }: Props) {
   const router = useRouter();
   const request = useRequestSummary(service.requestId);
   const title = request ? requestTitle(request) : `Solicitud #${service.requestId}`;
@@ -39,7 +40,7 @@ export function ServiceCard({ service, role, onChanged }: Props) {
         </View>
         <StatusChip label={SERVICE_STATUS_LABEL[service.status]} tone={SERVICE_STATUS_TONE[service.status]} shape="square" />
       </View>
-      {role === 'TECHNICIAN' ? <ServiceActions service={service} role={role} onChanged={onChanged} primaryOnly /> : null}
+      {role === 'TECHNICIAN' ? <ServiceActions service={service} role={role} onChanged={onChanged} onFailed={onFailed} primaryOnly /> : null}
     </Card>
   );
 }

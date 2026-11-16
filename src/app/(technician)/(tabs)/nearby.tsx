@@ -1,13 +1,12 @@
-import { useCaseView } from '@/features/technicians/caseView';
-import { CaseList } from '@/features/technicians/CaseList';
-import { OpportunityCard } from '@/features/technicians/OpportunityCard';
+import { CaseList, OpportunityCard, useCaseView } from '@/features/technicians';
 import { techniciansApi } from '@/shared/api/endpoints';
+import { LIST_PAGE_SIZE } from '@/shared/constants';
 import { usePagedList } from '@/shared/hooks/usePagedList';
 import { Screen, ScreenHeader } from '@/shared/ui';
 
 /** Oportunidades: every compatible open request inside the radius, nearest first. */
 export default function NearbyTab() {
-  const list = usePagedList((page, signal) => techniciansApi.matchingRequests(page, 10, { signal }), [], { refetchOnFocus: true });
+  const list = usePagedList((page, signal) => techniciansApi.matchingRequests(page, LIST_PAGE_SIZE, { signal }), [], { refetchOnFocus: true });
   const view = useCaseView(list, (r) => ({ request: r }), { sorts: ['near'], recommended: false });
   return (
     <Screen

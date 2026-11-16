@@ -26,12 +26,6 @@ export function validateProfileFields(fields: ProfileFields): ProfileErrors {
   return errors;
 }
 
-/** Accepts "12", "12,5" and "12.5". Returns NaN for anything else. */
-export function parseRadius(text: string): number {
-  const normalized = text.trim().replace(',', '.');
-  return /^\d+(\.\d+)?$/.test(normalized) ? Number(normalized) : Number.NaN;
-}
-
 export function validateRadius(radiusKm: number): string | undefined {
   if (!Number.isFinite(radiusKm) || radiusKm < RADIUS_MIN || radiusKm > RADIUS_MAX) {
     return `Elige un radio entre ${RADIUS_MIN} y ${RADIUS_MAX} km.`;
