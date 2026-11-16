@@ -1,10 +1,10 @@
+import { API_TIMEOUT_MS } from '../constants';
 import { API_BASE_URL } from './config';
 import { ApiError } from './errors';
 import { deleteSecret, getSecret, setSecret } from './storage';
 import type { TokenPair } from './types';
 
 const REFRESH_KEY = 'repairmatch.refreshToken';
-const TIMEOUT_MS = 30_000;
 
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -39,7 +39,7 @@ export function readRefreshToken() {
 
 async function rawFetch(path: string, options: RequestOptions, token: string | null): Promise<Response> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   const onAbort = () => controller.abort();
   options.signal?.addEventListener('abort', onAbort);
   try {

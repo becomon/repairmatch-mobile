@@ -1,3 +1,4 @@
+import { AI_SEARCH_PAGE_SIZE, LIST_PAGE_SIZE } from '../constants';
 import { api } from './client';
 import { seg, withQuery } from './paths';
 import type {
@@ -29,6 +30,8 @@ import type {
 } from './types';
 
 type Opts = { signal?: AbortSignal };
+
+const AI_SEARCH_PAGE = 0;
 
 // Auth ---------------------------------------------------------------------
 
@@ -94,14 +97,14 @@ export const techniciansApi = {
     api.request<TechnicianProfile>('/technicians/me/profile', { method: 'PUT', body }),
   updateArea: (body: ServiceAreaBody) =>
     api.request<TechnicianProfile>('/technicians/me/service-areas', { method: 'PUT', body }),
-  recommendedRequests: (page = 0, size = 10, o?: Opts) =>
+  recommendedRequests: (page = 0, size = LIST_PAGE_SIZE, o?: Opts) =>
     api.request<Page<RecommendedRequest>>(
       withQuery('/technicians/me/recommended-requests', { page, size }),
       o,
     ),
-  matchingRequests: (page = 0, size = 10, o?: Opts) =>
+  matchingRequests: (page = 0, size = LIST_PAGE_SIZE, o?: Opts) =>
     api.request<Page<MatchingRequest>>(withQuery('/technicians/me/matching-requests', { page, size }), o),
-  myProposals: (page = 0, size = 10, o?: Opts) =>
+  myProposals: (page = 0, size = LIST_PAGE_SIZE, o?: Opts) =>
     api.request<Page<Proposal>>(withQuery('/technicians/me/proposals', { page, size }), o),
   publicProfile: (id: string, o?: Opts) => api.request<TechnicianProfile>(`/technicians/${seg(id)}`, o),
   reputation: (id: string, o?: Opts) => api.request<TechnicianReputation>(`/technicians/${seg(id)}/reputation`, o),
@@ -118,8 +121,8 @@ export const identityApi = {
 // Local AI -----------------------------------------------------------------
 
 export const aiApi = {
-  structure: (description: string) =>
-    api.request<StructuredFault>('/ai/structure-request', { method: 'POST', body: { description } }),
-  search: (query: string, page = 0, size = 20) =>
-    api.request<AiSearchResult>('/ai/search', { method: 'POST', body: { query, page, size } }),
+  structure: (description: string, o?: Opts) =>
+    api.request<StructuredFault>('/ai/structure-request', { method: 'POST', body: { description }, ...o }),
+  search: (query: string, page = AI_SEARCH_PAGE, size = AI_SEARCH_PAGE_SIZE, o?: Opts) =>
+    api.request<AiSearchResult>('/ai/search', { method: 'POST', body: { query, page, size }, ...o }),
 };

@@ -6,16 +6,11 @@ export const colors = {
   primaryDark: '#a83a0b',
   primarySoft: '#fdeee6',
   onPrimary: '#ffffff',
-  // Legacy orange-accent keys now resolve to the brand.
-  accent: '#c94a14',
-  accentDark: '#a83a0b',
-  accentSoft: '#fdeee6',
   // Warm stone ground, white surfaces.
   background: '#eae6df',
   surface: '#ffffff',
   surface2: '#f3f0ea',
   border: '#d5cec0',
-  line: '#d5cec0',
   navLine: '#e2ddd3',
   text: '#1f1a16',
   textSoft: '#4a4038',
@@ -39,9 +34,16 @@ export const colors = {
   info: '#2448c8',
   infoSoft: '#e4e9fa',
   neutralSoft: '#f3f0ea',
-  teal: '#059669',
   coverLine: '#c2cec7',
   overlay: 'rgba(31,26,22,0.45)',
+  white: '#ffffff',
+  /** Dark chip over a photo (remove button). */
+  photoScrim: 'rgba(31,26,22,0.7)',
+  viewerBackdrop: 'rgba(0,0,0,0.92)',
+  viewerControl: 'rgba(255,255,255,0.16)',
+  /** Translucent brand fill for the coverage circle. */
+  coverageFill: 'rgba(201,74,20,0.14)',
+  sage: '#e3eae6',
 } as const;
 
 export const gradients = {
@@ -52,21 +54,8 @@ export const gradients = {
   /** Landing bands, used softly behind hero areas. */
   bandMint: ['#bce0ce', '#d8efe3', '#f3e8d8'],
   bandSand: ['#f5dfc9', '#efe6da', '#d4e7dd'],
-  /** Brand button face. */
-  brand: ['#d4561c', '#c94a14'],
   /** AI glow stops: terracotta, sun, emerald, back to terracotta. */
   ai: ['#c94a14', '#e7a52a', '#059669', '#c94a14'],
-} as const;
-
-// 8pt scale with a 4 step for tight gaps.
-export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
 } as const;
 
 /** Horizontal screen gutter. */
@@ -77,7 +66,6 @@ export const radius = {
   md: 12,
   lg: 16,
   card: 18,
-  xl: 20,
   pill: 999,
 } as const;
 

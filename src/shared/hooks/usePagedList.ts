@@ -87,9 +87,13 @@ export function usePagedList<T>(
     }, [refetchOnFocus]),
   );
 
+  // A ref, not the state: `onEndReached` can fire twice before React re-renders, and two requests
+  // for the same page would append its rows twice.
+  const loadingMoreRef = useRef(false);
   const loadMore = useCallback(() => {
     const current = stateRef.current;
-    if (!current || current.key !== keyRef.current || current.last || current.error || loadingMore) return;
+    if (!current || current.key !== keyRef.current || current.last || current.error || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     setLoadMoreError(null);
     const requestKey = keyRef.current;
@@ -98,14 +102,19 @@ export function usePagedList<T>(
       .then((p) => {
         if (keyRef.current !== requestKey) return;
         setState((prev) =>
-          prev
+          prev && prev.key === requestKey
             ? { ...prev, items: [...prev.items, ...p.content], page: p.page, last: p.last, total: p.totalElements }
             : prev,
         );
       })
-      .catch((error: unknown) => setLoadMoreError(error))
-      .finally(() => setLoadingMore(false));
-  }, [loadingMore]);
+      .catch((error: unknown) => {
+        if (keyRef.current === requestKey) setLoadMoreError(error);
+      })
+      .finally(() => {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+      });
+  }, []);
 
   const stale = enabled && state?.key !== key;
   const hasItems = (state?.items.length ?? 0) > 0;
