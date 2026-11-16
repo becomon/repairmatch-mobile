@@ -13,7 +13,7 @@ export function PhotoGallery({ uris }: { uris: string[] }) {
     <>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
         {uris.map((uri, index) => (
-          <Pressable key={uri} accessibilityRole="imagebutton" accessibilityLabel={`Ver foto ${index + 1} de ${uris.length}`} onPress={() => setOpen(index)}>
+          <Pressable key={`${uri}-${index}`} accessibilityRole="imagebutton" accessibilityLabel={`Ver foto ${index + 1} de ${uris.length}`} onPress={() => setOpen(index)}>
             <Image source={{ uri }} style={styles.thumb} />
           </Pressable>
         ))}
@@ -22,15 +22,15 @@ export function PhotoGallery({ uris }: { uris: string[] }) {
         <View style={styles.viewer}>
           <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} contentOffset={{ x: (open ?? 0) * width, y: 0 }}>
             {uris.map((uri, index) => (
-              <View key={uri} style={{ width, height, alignItems: 'center', justifyContent: 'center' }}>
+              <View key={`${uri}-${index}`} style={{ width, height, alignItems: 'center', justifyContent: 'center' }}>
                 <Image source={{ uri }} resizeMode="contain" accessibilityLabel={`Foto ${index + 1} del electrodoméstico`} style={{ width, height: height * 0.75 }} />
               </View>
             ))}
           </ScrollView>
           <View style={[styles.top, { top: insets.top + 8 }]}>
-            <Text variant="smallStrong" color="#ffffff">{open !== null ? `${open + 1} de ${uris.length}` : ''}</Text>
+            <Text variant="smallStrong" color={colors.white}>{open !== null ? `${open + 1} de ${uris.length}` : ''}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Cerrar foto" onPress={() => setOpen(null)} style={styles.close}>
-              <Icon name="close" size={26} color="#ffffff" />
+              <Icon name="close" size={26} color={colors.white} />
             </Pressable>
           </View>
         </View>
@@ -42,7 +42,7 @@ export function PhotoGallery({ uris }: { uris: string[] }) {
 const styles = StyleSheet.create({
   row: { gap: 10 },
   thumb: { width: 120, height: 120, borderRadius: radius.md, backgroundColor: colors.neutralSoft },
-  viewer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)' },
+  viewer: { flex: 1, backgroundColor: colors.viewerBackdrop },
   top: { position: 'absolute', left: 20, right: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  close: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.16)' },
+  close: { width: TOUCH, height: TOUCH, borderRadius: TOUCH / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.viewerControl },
 });

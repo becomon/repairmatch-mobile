@@ -17,6 +17,10 @@ export interface EvidenceApiClient {
   }): Promise<T>;
 }
 
+/**
+ * The only place that knows the evidence endpoints. It takes the client as a parameter so it can
+ * be tested without the network; `client.ts` binds it to the app's single authenticated client.
+ */
 export function createEvidenceApi(api: EvidenceApiClient) {
   function path(id: number) {
     if (!Number.isSafeInteger(id) || id <= 0) throw new Error('Invalid request ID.');
@@ -25,7 +29,8 @@ export function createEvidenceApi(api: EvidenceApiClient) {
   return {
     add: (id: number, body: CreateEvidence) =>
       api.request<Evidence>(path(id), { method: 'POST', body }),
-    list: (id: number) => api.request<Evidence[]>(path(id)),
+    list: (id: number, options: { signal?: AbortSignal } = {}) =>
+      api.request<Evidence[]>(path(id), options.signal ? { signal: options.signal } : undefined),
   };
 }
 
