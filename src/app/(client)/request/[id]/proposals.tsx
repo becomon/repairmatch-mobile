@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { invalidateRequest } from '@/features/requests/useRequestSummary';
+import { applianceTitle } from '@/features/catalog/appliances';
 import { isOpenRequest } from '@/features/requests/status';
 import { friendlyError } from '@/shared/api/errors';
 import { proposalsApi, requestsApi } from '@/shared/api/endpoints';
@@ -55,6 +57,7 @@ export default function CompareProposals() {
     setError('');
     try {
       const service = await proposalsApi.accept(selected.proposal.id);
+      invalidateRequest(id);
       setConfirming(false);
       router.replace({ pathname: '/service/[id]', params: { id: String(service.id) } });
     } catch (cause) {
@@ -70,7 +73,7 @@ export default function CompareProposals() {
   const header = (
     <ScreenHeader
       title={offers.data ? `${offers.data.length} ${offers.data.length === 1 ? 'propuesta' : 'propuestas'}` : 'Propuestas'}
-      subtitle={request.data ? `${request.data.applianceTypeName}${request.data.brand ? ` ${request.data.brand}` : ''}` : undefined}
+      subtitle={request.data ? applianceTitle(request.data.applianceTypeName, request.data.brand) : undefined}
       back
       fallbackHref="/requests"
     />
@@ -135,7 +138,7 @@ export default function CompareProposals() {
                   </View>
                   <View style={{ alignItems: 'flex-end' }}>
                     <Text variant="heading" style={{ fontSize: 20 }}>{formatMoney(p.diagnosticCost)}</Text>
-                    <Text variant="small" color={colors.textMuted}>visita y diagnóstico</Text>
+                    <Text variant="small" color={colors.textMuted}>diagnóstico</Text>
                   </View>
                 </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -148,7 +151,7 @@ export default function CompareProposals() {
                 <Pressable
                   accessibilityRole="link"
                   onPress={() => router.push({ pathname: '/technician/[id]', params: { id: p.technicianId } })}
-                  style={{ minHeight: 40, justifyContent: 'center' }}
+                  style={{ minHeight: 44, justifyContent: 'center' }}
                 >
                   <Text variant="smallStrong" color={colors.primary}>Ver perfil de {p.technicianName.split(' ')[0]}</Text>
                 </Pressable>

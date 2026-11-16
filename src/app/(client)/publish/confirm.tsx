@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { applianceLabel } from '@/features/catalog/appliances';
 import { ApplianceTile } from '@/features/requests/ApplianceTile';
 import { useDraft } from '@/features/requests/draft';
 import { aiApi, listApplianceTypes } from '@/shared/api/endpoints';
@@ -103,7 +104,7 @@ export default function PublishConfirm() {
                       }}
                     >
                       <ApplianceTile name={t.name} size={32} />
-                      <Text variant="bodyStrong" color={selected ? colors.primary : colors.text}>{t.name}</Text>
+                      <Text variant="bodyStrong" color={selected ? colors.primary : colors.text}>{applianceLabel(t.name)}</Text>
                     </Pressable>
                   );
                 })}

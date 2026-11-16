@@ -1,13 +1,12 @@
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { requestsApi } from '@/shared/api/endpoints';
 import type { Role, Service } from '@/shared/api/types';
 import { formatDay } from '@/shared/format';
-import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { colors } from '@/shared/theme';
 import { Card, StatusChip, Text } from '@/shared/ui';
 import { ApplianceTile } from '../requests/ApplianceTile';
 import { requestTitle } from '../requests/RequestCard';
+import { useRequestSummary } from '../requests/useRequestSummary';
 import { SERVICE_STATUS_LABEL, SERVICE_STATUS_TONE } from '../requests/status';
 import { ServiceActions } from './ServiceActions';
 
@@ -20,8 +19,8 @@ interface Props {
 /** Row in the services lists. The appliance name comes from the request; the card works without it. */
 export function ServiceCard({ service, role, onChanged }: Props) {
   const router = useRouter();
-  const request = useApiQuery((signal) => requestsApi.get(service.requestId, { signal }), [service.requestId]);
-  const title = request.data ? requestTitle(request.data) : `Solicitud #${service.requestId}`;
+  const request = useRequestSummary(service.requestId);
+  const title = request ? requestTitle(request) : `Solicitud #${service.requestId}`;
   const who = role === 'CLIENT' ? `con ${service.technicianName}` : `solicitud #${service.requestId}`;
   const path = role === 'CLIENT' ? '/service/[id]' : '/job/[id]';
   return (
@@ -31,7 +30,7 @@ export function ServiceCard({ service, role, onChanged }: Props) {
       style={{ gap: 12 }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <ApplianceTile name={request.data?.applianceTypeName ?? ''} />
+        <ApplianceTile name={request?.applianceTypeName ?? ''} />
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="bodyStrong" numberOfLines={1}>{title}</Text>
           <Text variant="small" color={colors.textMuted} numberOfLines={1}>

@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { friendlyError } from '../api/errors';
+import { friendlyError, isNetworkError } from '../api/errors';
 import { colors } from '../theme';
 import { Button } from './Button';
 import { Icon } from './Icon';
@@ -11,12 +11,13 @@ interface Props {
 }
 
 export function ErrorState({ error, onRetry }: Props) {
+  const offline = isNetworkError(error);
   return (
     <View style={styles.wrap} accessibilityRole="alert">
       <View style={styles.badge}>
         <Icon name="cloud-offline-outline" size={32} color={colors.danger} />
       </View>
-      <Text variant="heading" align="center">Algo salió mal</Text>
+      <Text variant="heading" align="center">{offline ? 'Sin conexión' : 'Algo salió mal'}</Text>
       <Text variant="body" color={colors.textMuted} align="center">{friendlyError(error)}</Text>
       {onRetry ? <Button label="Reintentar" icon="refresh" onPress={onRetry} compact style={styles.action} /> : null}
     </View>

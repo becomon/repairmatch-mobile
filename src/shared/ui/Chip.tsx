@@ -54,16 +54,17 @@ interface FilterChipProps {
   label: string;
   selected: boolean;
   onPress: () => void;
+  disabled?: boolean;
 }
 
 /** Selectable pill for filters and sort order. */
-export function FilterChip({ label, selected, onPress }: FilterChipProps) {
+export function FilterChip({ label, selected, onPress, disabled }: FilterChipProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={[styles.filter, selected ? styles.filterOn : styles.filterOff]}
+      accessibilityState={{ selected, disabled: !!disabled }}
+      onPress={disabled ? undefined : onPress}
+      style={[styles.filter, selected ? styles.filterOn : styles.filterOff, disabled ? styles.filterDisabled : null]}
     >
       <Text variant="smallStrong" color={selected ? '#ffffff' : colors.text} numberOfLines={1}>
         {label}
@@ -76,7 +77,8 @@ const styles = StyleSheet.create({
   status: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start' },
   dot: { width: 6, height: 6, borderRadius: 3 },
   info: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.sm, backgroundColor: colors.background },
-  filter: { minHeight: 40, paddingHorizontal: 16, borderRadius: radius.pill, justifyContent: 'center', borderWidth: 1 },
+  filter: { minHeight: 44, paddingHorizontal: 16, borderRadius: radius.pill, justifyContent: 'center', borderWidth: 1 },
   filterOn: { backgroundColor: colors.text, borderColor: colors.text },
+  filterDisabled: { opacity: 0.4 },
   filterOff: { backgroundColor: colors.surface, borderColor: colors.border },
 });

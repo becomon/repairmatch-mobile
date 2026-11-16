@@ -8,6 +8,7 @@ import {
   setSessionExpiredHandler,
 } from '@/shared/api/client';
 import type { RegisterBody, User } from '@/shared/api/types';
+import { clearRequestCache } from '../requests/useRequestSummary';
 
 type Status = 'loading' | 'signedOut' | 'signedIn';
 
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Revoke on the server best-effort; the local session ends either way.
     if (refreshToken) await authApi.logout(refreshToken).catch(() => undefined);
     await clearTokens();
+    clearRequestCache();
     setUser(null);
     setStatus('signedOut');
   }, []);

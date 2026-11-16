@@ -8,13 +8,16 @@ interface Props<T> {
   renderItem: (item: T) => React.ReactElement;
   keyExtractor: (item: T) => string;
   header?: React.ReactElement;
+  /** Search or tab filters are active: an empty list then means "nothing matches", not "no cases". */
+  filtered?: boolean;
+  onClearFilters?: () => void;
 }
 
 /**
  * Opportunity lists answer 400/404/409 until the technician has a profile and a service area,
  * so those errors become a guided empty state instead of a generic failure.
  */
-export function CaseList<T>({ list, renderItem, keyExtractor, header }: Props<T>) {
+export function CaseList<T>({ list, renderItem, keyExtractor, header, filtered, onClearFilters }: Props<T>) {
   const router = useRouter();
   const needsSetup = list.error instanceof ApiError && [400, 404, 409].includes(list.error.status) && list.items.length === 0;
   if (needsSetup) {
@@ -37,13 +40,17 @@ export function CaseList<T>({ list, renderItem, keyExtractor, header }: Props<T>
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       header={header}
-      empty={{
-        icon: 'search-outline',
-        title: 'No hay casos por ahora',
-        message: 'Cuando un cliente publique una falla dentro de tu radio, aparecerá aquí. Ampliar tu radio de atención te muestra más casos.',
-        actionLabel: 'Ajustar mi radio',
-        onAction: () => router.push('/account'),
-      }}
+      empty={
+        filtered
+          ? { icon: 'funnel-outline', title: 'Nada con estos filtros', message: 'Prueba otra búsqueda o quita los filtros para ver todos los casos cargados.', actionLabel: 'Quitar filtros', onAction: onClearFilters }
+          : {
+              icon: 'search-outline',
+              title: 'No hay casos por ahora',
+              message: 'Cuando un cliente publique una falla dentro de tu radio, aparecerá aquí. Ampliar tu radio de atención te muestra más casos.',
+              actionLabel: 'Ajustar mi radio',
+              onAction: () => router.push('/account'),
+            }
+      }
     />
   );
 }

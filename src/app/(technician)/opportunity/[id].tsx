@@ -129,7 +129,7 @@ export default function SendProposal() {
         </ScrollView>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: GUTTER }} style={{ marginHorizontal: -GUTTER, flexGrow: 0 }}>
           {HOURS.map((h) => (
-            <FilterChip key={h} label={`${h}:00`} selected={hour === h} onPress={() => setHour(h)} />
+            <FilterChip key={h} label={`${h}:00`} selected={hour === h} disabled={dayOffset === 0 && h <= new Date().getHours()} onPress={() => setHour(h)} />
           ))}
         </ScrollView>
         {errors.when ? <Text variant="small" color={colors.danger}>{errors.when}</Text> : null}

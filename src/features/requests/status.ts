@@ -46,11 +46,3 @@ export const PROPOSAL_STATUS_TONE: Record<ProposalStatus, Tone> = {
 export function isOpenRequest(status: RequestStatus): boolean {
   return status === 'PUBLICADA' || status === 'CON_PROPUESTAS';
 }
-
-/** Icon family hint from the catalog name ("Lavadora", "Refrigeradora"). */
-export function applianceKind(name: string): 'washer' | 'fridge' | 'other' {
-  const n = name.toLowerCase();
-  if (n.includes('lava')) return 'washer';
-  if (n.includes('refri') || n.includes('nevera') || n.includes('frigor')) return 'fridge';
-  return 'other';
-}

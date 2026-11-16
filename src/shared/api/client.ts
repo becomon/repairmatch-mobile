@@ -125,9 +125,37 @@ async function execute(path: string, options: RequestOptions): Promise<Response>
   return response;
 }
 
+const RETRY_DELAYS_MS = [400, 1200];
+
+function wait(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => { clearTimeout(timer); resolve(); }, { once: true });
+  });
+}
+
+/**
+ * Reads (GET) are retried with a short backoff when the failure is recoverable: no connection,
+ * a gateway error or a rate limit. Writes are never retried, so nothing is created twice.
+ */
+async function executeWithRetry(path: string, options: RequestOptions): Promise<Response> {
+  const idempotent = (options.method ?? 'GET') === 'GET';
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await execute(path, options);
+    } catch (cause) {
+      const recoverable = cause instanceof ApiError && (cause.status === 0 || cause.status === 429 || cause.status === 502 || cause.status === 503 || cause.status === 504);
+      const delay = RETRY_DELAYS_MS[attempt];
+      if (!idempotent || !recoverable || delay === undefined || options.signal?.aborted) throw cause;
+      await wait(delay, options.signal);
+      if (options.signal?.aborted) throw cause;
+    }
+  }
+}
+
 export const api = {
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-    const response = await execute(path, options);
+    const response = await executeWithRetry(path, options);
     if (response.status === 204) return undefined as T;
     const text = await response.text();
     return (text ? JSON.parse(text) : undefined) as T;

@@ -8,7 +8,7 @@ import type { RequestStatus } from '@/shared/api/types';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { usePagedList } from '@/shared/hooks/usePagedList';
 import { colors, GUTTER, TOUCH } from '@/shared/theme';
-import { FilterChip, Icon, PagedListView, Screen, ScreenHeader, Text, TextField } from '@/shared/ui';
+import { FilterChip, Icon, PagedListView, Screen, ScreenHeader, SearchInput, Text } from '@/shared/ui';
 
 const FILTERS: { label: string; value: RequestStatus | undefined }[] = [
   { label: 'Todas', value: undefined },
@@ -41,7 +41,7 @@ export default function RequestsTab() {
           title="Mis solicitudes"
           subtitle={list.total > 0 || filtered ? `${list.total} en total` : undefined}
           right={
-            <Pressable accessibilityRole="button" accessibilityLabel="Nueva solicitud" onPress={() => router.push('/publish')} style={{ width: TOUCH, height: TOUCH, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Nueva solicitud" onPress={() => router.push('/publish')} style={{ width: TOUCH, height: TOUCH, marginLeft: 8, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="add" size={26} color="#ffffff" />
             </Pressable>
           }
@@ -54,7 +54,7 @@ export default function RequestsTab() {
         renderItem={(r) => <RequestCard request={r} />}
         header={
           <View style={{ gap: 12, paddingBottom: 12 }}>
-            <TextField label="Buscar" value={search} onChangeText={setSearch} placeholder="Marca, modelo o falla" returnKeyType="search" autoCapitalize="none" />
+            <SearchInput label="Buscar solicitudes" value={search} onChangeText={setSearch} placeholder="Marca, modelo o falla" />
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: GUTTER }}>
               {FILTERS.map((f) => (
                 <FilterChip key={f.label} label={f.label} selected={status === f.value} onPress={() => setStatus(f.value)} />
@@ -64,7 +64,7 @@ export default function RequestsTab() {
               accessibilityRole="button"
               accessibilityLabel={sort === 'newest' ? 'Ordenar por más antiguas' : 'Ordenar por más recientes'}
               onPress={() => setSort((s) => (s === 'newest' ? 'oldest' : 'newest'))}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36 }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 }}
             >
               <Icon name="swap-vertical" size={18} color={colors.textMuted} />
               <Text variant="smallStrong" color={colors.textMuted}>{sort === 'newest' ? 'Más recientes primero' : 'Más antiguas primero'}</Text>

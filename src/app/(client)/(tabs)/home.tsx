@@ -5,8 +5,9 @@ import { useUser } from '@/features/auth/AuthProvider';
 import { ApplianceTile } from '@/features/requests/ApplianceTile';
 import { useDraft } from '@/features/requests/draft';
 import { RequestCard } from '@/features/requests/RequestCard';
-import { isOpenRequest } from '@/features/requests/status';
-import { listApplianceTypes, requestsApi } from '@/shared/api/endpoints';
+import { ServiceCard } from '@/features/services/ServiceCard';
+import { applianceLabel } from '@/features/catalog/appliances';
+import { listApplianceTypes, requestsApi, servicesApi } from '@/shared/api/endpoints';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { colors, radius } from '@/shared/theme';
 import { Button, Card, EmptyState, ErrorState, Icon, LoadingState, Screen, SectionHeader, Text, TextField } from '@/shared/ui';
@@ -19,9 +20,16 @@ export default function ClientHome() {
   const { update, reset } = useDraft();
   const [text, setText] = useState('');
   const types = useApiQuery((signal) => listApplianceTypes({ signal }), []);
-  const recent = useApiQuery((signal) => requestsApi.list({ page: 0, size: 10, sort: 'newest' }, { signal }), [], { refetchOnFocus: true });
+  // The API filters by one status at a time, so the two open states are read separately (newest 3 each).
+  const withOffers = useApiQuery((signal) => requestsApi.list({ page: 0, size: 3, status: 'CON_PROPUESTAS', sort: 'newest' }, { signal }), [], { refetchOnFocus: true });
+  const published = useApiQuery((signal) => requestsApi.list({ page: 0, size: 3, status: 'PUBLICADA', sort: 'newest' }, { signal }), [], { refetchOnFocus: true });
+  const services = useApiQuery((signal) => servicesApi.list({ signal }), [], { refetchOnFocus: true });
 
-  const active = (recent.data?.content ?? []).filter((r) => isOpenRequest(r.status)).slice(0, 3);
+  // Requests with offers need an answer first, so they lead.
+  const active = [...(withOffers.data?.content ?? []), ...(published.data?.content ?? [])].slice(0, 3);
+  const recentLoading = withOffers.initialLoading || published.initialLoading;
+  const recentError = (withOffers.error && !withOffers.data) || (published.error && !published.data) ? (withOffers.error ?? published.error) : null;
+  const liveServices = (services.data ?? []).filter((s) => s.status === 'PROGRAMADO' || s.status === 'EN_ATENCION').slice(0, 2);
   const canAnalyse = text.trim().length >= MIN_CHARS;
 
   function analyse() {
@@ -37,7 +45,7 @@ export default function ClientHome() {
   }
 
   return (
-    <Screen inTabs onRefresh={() => { types.refetch(); recent.refetch(); }} refreshing={(types.loading && !!types.data) || (recent.loading && !!recent.data)}>
+    <Screen inTabs onRefresh={() => { types.refetch(); withOffers.refetch(); published.refetch(); services.refetch(); }} refreshing={(types.loading && !!types.data) || (withOffers.loading && !!withOffers.data) || (published.loading && !!published.data)}>
       <View style={{ gap: 2, paddingTop: 8 }}>
         <Text variant="small" color={colors.textMuted}>Hola, {user.name.split(' ')[0]}</Text>
         <Text variant="display">¿Qué se malogró?</Text>
@@ -78,10 +86,10 @@ export default function ClientHome() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
           {(types.data ?? []).map((t) => (
             <View key={t.id} style={{ width: '48%', flexGrow: 1 }}>
-              <Card onPress={() => startWith(t.id)} accessibilityLabel={`Publicar solicitud de ${t.name}`} style={{ gap: 10 }}>
+              <Card onPress={() => startWith(t.id)} accessibilityLabel={`Publicar solicitud de ${applianceLabel(t.name)}`} style={{ gap: 10 }}>
                 <ApplianceTile name={t.name} size={56} />
-                <Text variant="heading">{t.name}</Text>
-                <Text variant="small" color={colors.textMuted} numberOfLines={2}>{t.description || 'Publica tu solicitud'}</Text>
+                <Text variant="heading" numberOfLines={2}>{applianceLabel(t.name)}</Text>
+                <Text variant="small" color={colors.textMuted}>Publicar solicitud</Text>
               </Card>
             </View>
           ))}
@@ -89,10 +97,10 @@ export default function ClientHome() {
       )}
 
       <SectionHeader title="Mis solicitudes activas" actionLabel="Ver todas" onAction={() => router.push('/requests')} />
-      {recent.initialLoading ? (
+      {recentLoading ? (
         <LoadingState />
-      ) : recent.error && !recent.data ? (
-        <ErrorState error={recent.error} onRetry={recent.refetch} />
+      ) : recentError ? (
+        <ErrorState error={recentError} onRetry={() => { withOffers.refetch(); published.refetch(); }} />
       ) : active.length === 0 ? (
         <EmptyState icon="construct-outline" title="Sin solicitudes activas" message="Cuando publiques una falla, la verás aquí con sus propuestas." />
       ) : (
@@ -102,6 +110,17 @@ export default function ClientHome() {
           ))}
         </View>
       )}
+
+      {liveServices.length > 0 ? (
+        <>
+          <SectionHeader title="Servicios en curso" actionLabel="Ver todos" onAction={() => router.push('/services')} />
+          <View style={{ gap: 10 }}>
+            {liveServices.map((s) => (
+              <ServiceCard key={s.id} service={s} role="CLIENT" onChanged={() => services.refetch()} />
+            ))}
+          </View>
+        </>
+      ) : null}
     </Screen>
   );
 }

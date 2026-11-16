@@ -1,5 +1,6 @@
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { applianceLabel } from '@/features/catalog/appliances';
 import { ApplianceTile } from '@/features/requests/ApplianceTile';
 import { useDraft } from '@/features/requests/draft';
 import { listApplianceTypes } from '@/shared/api/endpoints';
@@ -54,8 +55,7 @@ export default function PublishDescribe() {
               >
                 <ApplianceTile name={t.name} />
                 <View style={{ flex: 1 }}>
-                  <Text variant="bodyStrong">{t.name}</Text>
-                  {t.description ? <Text variant="small" color={colors.textMuted} numberOfLines={1}>{t.description}</Text> : null}
+                  <Text variant="bodyStrong">{applianceLabel(t.name)}</Text>
                 </View>
                 <Icon name={selected ? 'radio-button-on' : 'radio-button-off'} size={22} color={selected ? colors.primary : colors.textMuted} />
               </Pressable>

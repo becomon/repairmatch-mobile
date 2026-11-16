@@ -50,6 +50,12 @@ export function PagedListView<T>({ list, renderItem, keyExtractor, empty, header
             <Text variant="small" color={colors.textMuted}>No pudimos cargar más resultados.</Text>
             <Button label="Reintentar" variant="secondary" compact onPress={list.loadMore} />
           </View>
+        ) : list.items.length > 0 && list.total > 0 ? (
+          <View style={styles.footer}>
+            <Text variant="small" color={colors.textMuted}>
+              {`Mostrando ${list.items.length} de ${list.total}${list.hasMore ? ' · desliza para ver más' : ''}`}
+            </Text>
+          </View>
         ) : undefined
       }
     />

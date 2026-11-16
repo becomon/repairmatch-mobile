@@ -18,6 +18,13 @@ const STEPS: { status: ServiceStatus; label: string }[] = [
   { status: 'COMPLETADO', label: 'Completado' },
 ];
 
+const SUMMARY: Record<ServiceStatus, string> = {
+  PROGRAMADO: 'El servicio está agendado y a la espera de que el técnico inicie la atención.',
+  EN_ATENCION: 'El técnico está realizando la reparación.',
+  COMPLETADO: 'La reparación terminó. El cliente ya puede dejar su reseña.',
+  CANCELADO: 'Este servicio se canceló antes de comenzar.',
+};
+
 function stepState(step: ServiceStatus, current: ServiceStatus): 'done' | 'current' | 'pending' {
   if (current === 'CANCELADO') return step === 'PROGRAMADO' ? 'done' : 'pending';
   const order = STEPS.findIndex((s) => s.status === step);
@@ -49,7 +56,8 @@ export function ServiceDetail({ id, role }: { id: number; role: Role }) {
   if (service.initialLoading) return <Screen header={header}><LoadingState /></Screen>;
   if (!service.data) return <Screen header={header}><ErrorState error={service.error} onRetry={service.refetch} /></Screen>;
 
-  const s = override && override.id === service.data.id ? override : service.data;
+  // The status the user just set shows right away, but only until the reload brings the server copy.
+  const s = override && override.id === service.data.id && service.loading ? override : service.data;
   const accepted = proposals.data?.find((p) => p.id === s.proposalId);
   const hasReview = !!review.data;
   const reviewMissing = review.error instanceof ApiError && review.error.status === 404;
@@ -77,7 +85,7 @@ export function ServiceDetail({ id, role }: { id: number; role: Role }) {
   return (
     <Screen
       header={header}
-      onRefresh={() => { service.refetch(); review.refetch(); }}
+      onRefresh={() => { service.refetch(); }}
       refreshing={service.loading}
       footer={canReview ? <Button label="Publicar reseña" onPress={() => void submitReview()} loading={submitting} /> : null}
     >
@@ -96,15 +104,14 @@ export function ServiceDetail({ id, role }: { id: number; role: Role }) {
           <InfoRow label="Creado" value={formatWhen(s.createdAt)} />
         </View>
         {isClient ? (
-          <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/technician/[id]', params: { id: s.technicianId } })} style={{ minHeight: 40, justifyContent: 'center' }}>
+          <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/technician/[id]', params: { id: s.technicianId } })} style={{ minHeight: 44, justifyContent: 'center' }}>
             <Text variant="smallStrong" color={colors.primary}>Ver perfil de {s.technicianName.split(' ')[0]}</Text>
           </Pressable>
         ) : null}
       </Card>
 
-      {s.status === 'CANCELADO' ? <Banner tone="danger" message="Este servicio fue cancelado." /> : null}
-
       <SectionHeader title="Estado del servicio" />
+      <Text variant="small" color={colors.textSoft}>{SUMMARY[s.status]}</Text>
       <Card style={{ gap: 0 }}>
         {STEPS.map((step, index) => {
           const state = stepState(step.status, s.status);
@@ -140,7 +147,7 @@ export function ServiceDetail({ id, role }: { id: number; role: Role }) {
         </Card>
       ) : null}
 
-      <ServiceActions service={s} role={role} onChanged={(updated) => { setOverride(updated); service.refetch(); }} />
+      <ServiceActions service={s} role={role} onChanged={(updated) => { setOverride(updated); service.refetch(); review.refetch(); }} />
 
       {hasReview && review.data ? (
         <Card style={{ gap: 8 }}>

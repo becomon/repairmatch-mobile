@@ -47,7 +47,7 @@ export function Button({ label, onPress, variant = 'primary', loading, disabled,
       ) : (
         <View style={styles.row}>
           {icon ? <Icon name={icon} size={20} color={p.fg} /> : null}
-          <Text variant="bodyStrong" color={p.fg} numberOfLines={1} style={styles.label}>
+          <Text variant="bodyStrong" color={p.fg} numberOfLines={2} align="center" style={styles.label}>
             {label}
           </Text>
         </View>
@@ -61,7 +61,8 @@ const styles = StyleSheet.create({
     minHeight: TOUCH + 4,
     borderRadius: radius.lg,
     borderWidth: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },

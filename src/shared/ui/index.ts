@@ -10,6 +10,7 @@ export { LoadingState } from './LoadingState';
 export { Banner, InfoRow, SectionHeader, StepProgress } from './misc';
 export { PagedListView } from './PagedListView';
 export { RatingSummary, StarInput, Stars } from './Rating';
+export { SearchInput } from './SearchInput';
 export { Screen } from './Screen';
 export { ScreenHeader } from './ScreenHeader';
 export { Text } from './Text';

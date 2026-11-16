@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { applianceLabel } from '@/features/catalog/appliances';
 import { techniciansApi } from '@/shared/api/endpoints';
 import { formatDay } from '@/shared/format';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
@@ -46,7 +47,7 @@ export default function TechnicianPublicProfile() {
 
       <SectionHeader title="Atiende" />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        {p.applianceTypes.length > 0 ? p.applianceTypes.map((t) => <InfoChip key={t} label={t} />) : <Text variant="small" color={colors.textMuted}>Aún no indicó sus especialidades.</Text>}
+        {p.applianceTypes.length > 0 ? p.applianceTypes.map((t) => <InfoChip key={t} label={applianceLabel(t)} />) : <Text variant="small" color={colors.textMuted}>Aún no indicó sus especialidades.</Text>}
       </View>
 
       <SectionHeader title="Reseñas" />

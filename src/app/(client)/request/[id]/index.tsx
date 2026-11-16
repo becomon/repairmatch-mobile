@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Image, ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AddPhoto } from '@/features/evidences/AddPhoto';
+import { PhotoGallery } from '@/features/evidences/PhotoGallery';
+import { useDraft } from '@/features/requests/draft';
 import { createEvidenceApi } from '@/features/evidences/api';
 import { ApplianceTile } from '@/features/requests/ApplianceTile';
 import { getCurrentCoords, LocationDeniedError } from '@/features/requests/location';
 import { requestTitle } from '@/features/requests/RequestCard';
+import { invalidateRequest } from '@/features/requests/useRequestSummary';
 import { isOpenRequest, REQUEST_STATUS_LABEL, REQUEST_STATUS_TONE } from '@/features/requests/status';
 import { api } from '@/shared/api/client';
 import { friendlyError } from '@/shared/api/errors';
@@ -13,13 +16,14 @@ import { proposalsApi, requestsApi } from '@/shared/api/endpoints';
 import { formatWhen, pluralize } from '@/shared/format';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { httpUrl } from '@/shared/safeUrl';
-import { colors, radius } from '@/shared/theme';
+import { colors } from '@/shared/theme';
 import { Banner, Button, Card, ConfirmDialog, ErrorState, InfoRow, LoadingState, Screen, ScreenHeader, SectionHeader, StatusChip, Text } from '@/shared/ui';
 
 const evidenceApi = createEvidenceApi(api);
 
 export default function RequestDetail() {
   const router = useRouter();
+  const { reset, update } = useDraft();
   const params = useLocalSearchParams<{ id: string; photosFailed?: string }>();
   const id = Number(params.id);
   const request = useApiQuery((signal) => requestsApi.get(id, { signal }), [id], { refetchOnFocus: true });
@@ -38,6 +42,7 @@ export default function RequestDetail() {
     setBusy(true);
     try {
       await requestsApi.cancel(id);
+      invalidateRequest(id);
       setCancelling(false);
       request.refetch();
     } catch (cause) {
@@ -54,6 +59,7 @@ export default function RequestDetail() {
     try {
       const { latitude, longitude } = await getCurrentCoords();
       await requestsApi.setLocation(id, latitude, longitude);
+      invalidateRequest(id);
       setNotice({ tone: 'success', message: 'Ubicación actualizada con tu GPS.' });
       request.refetch();
     } catch (cause) {
@@ -68,6 +74,20 @@ export default function RequestDetail() {
   if (!request.data) return <Screen header={header}><ErrorState error={request.error} onRetry={request.refetch} /></Screen>;
 
   const r = request.data;
+
+  /** Starts a fresh request with the same data; the old one is final and cannot be reopened. */
+  function republish() {
+    reset();
+    update({
+      applianceTypeId: r.applianceTypeId,
+      description: r.originalDescription,
+      brand: r.brand ?? '',
+      model: r.model ?? '',
+      location: r.latitude !== null && r.longitude !== null ? { latitude: r.latitude, longitude: r.longitude, label: 'Ubicación de la solicitud anterior' } : null,
+    });
+    router.push('/publish/confirm');
+  }
+
   const proposalCount = proposals.data?.length ?? 0;
   const photos = (evidences.data ?? []).map((e) => httpUrl(e.mediaUrl)).filter((u): u is string => !!u);
   const photosFailed = Number(params.photosFailed ?? 0);
@@ -84,6 +104,8 @@ export default function RequestDetail() {
   } else if (r.status === 'CERRADA' && service.data) {
     const serviceId = service.data.id;
     footer = <Button label="Ver seguimiento del servicio" icon="navigate-outline" onPress={() => router.push({ pathname: '/service/[id]', params: { id: String(serviceId) } })} />;
+  } else if (r.status === 'CANCELADA' || r.status === 'EXPIRADA') {
+    footer = <Button label="Publicar de nuevo" icon="refresh" onPress={republish} accessibilityHint="Abre una solicitud nueva con estos mismos datos" />;
   }
 
   return (
@@ -120,11 +142,7 @@ export default function RequestDetail() {
       {evidences.initialLoading ? (
         <LoadingState />
       ) : photos.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-          {photos.map((uri) => (
-            <Image key={uri} source={{ uri }} accessibilityLabel="Foto del electrodoméstico" style={{ width: 120, height: 120, borderRadius: radius.md, backgroundColor: colors.neutralSoft }} />
-          ))}
-        </ScrollView>
+        <PhotoGallery uris={photos} />
       ) : (
         <Text variant="small" color={colors.textMuted}>Aún no hay fotos en esta solicitud.</Text>
       )}

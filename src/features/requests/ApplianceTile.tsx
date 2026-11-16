@@ -1,20 +1,13 @@
 import { View } from 'react-native';
-import { colors } from '@/shared/theme';
-import { Icon, type IconName } from '@/shared/ui';
-import { applianceKind } from './status';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { applianceVisual } from '@/features/catalog/appliances';
 
-const ICON: Record<ReturnType<typeof applianceKind>, { name: IconName; fg: string; bg: string }> = {
-  washer: { name: 'water', fg: colors.primary, bg: colors.primarySoft },
-  fridge: { name: 'snow', fg: '#c24a0c', bg: colors.accentSoft },
-  other: { name: 'build', fg: colors.textSoft, bg: colors.neutralSoft },
-};
-
-/** Rounded square with an icon for the appliance family. */
+/** Rounded square with the drawn icon of the appliance type (wrench only for unknown types). */
 export function ApplianceTile({ name, size = 44 }: { name: string; size?: number }) {
-  const i = ICON[applianceKind(name)];
+  const visual = applianceVisual(name);
   return (
-    <View accessible={false} style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: i.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name={i.name} size={size * 0.5} color={i.fg} />
+    <View accessible={false} style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: visual.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <MaterialCommunityIcons name={visual.icon} size={size * 0.56} color={visual.fg} accessible={false} />
     </View>
   );
 }
