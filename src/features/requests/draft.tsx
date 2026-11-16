@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import type { ImagePickerAsset } from 'expo-image-picker';
-import type { PickedLocation } from './location';
+import type { PickedLocation } from '@/shared/location';
 
 /** Everything the publish flow collects before the request exists on the server. */
 export interface PublishDraft {
@@ -27,9 +27,12 @@ const EMPTY: PublishDraft = {
   symptomLabel: null,
 };
 
+/** A patch, or a function of the latest draft (use it after an `await`, when a captured draft is stale). */
+type DraftPatch = Partial<PublishDraft> | ((draft: PublishDraft) => Partial<PublishDraft>);
+
 interface DraftContextValue {
   draft: PublishDraft;
-  update: (patch: Partial<PublishDraft>) => void;
+  update: (patch: DraftPatch) => void;
   reset: () => void;
 }
 
@@ -37,7 +40,10 @@ const DraftContext = createContext<DraftContextValue | null>(null);
 
 export function DraftProvider({ children }: { children: React.ReactNode }) {
   const [draft, setDraft] = useState<PublishDraft>(EMPTY);
-  const update = useCallback((patch: Partial<PublishDraft>) => setDraft((d) => ({ ...d, ...patch })), []);
+  const update = useCallback(
+    (patch: DraftPatch) => setDraft((d) => ({ ...d, ...(typeof patch === 'function' ? patch(d) : patch) })),
+    [],
+  );
   const reset = useCallback(() => setDraft(EMPTY), []);
   const value = useMemo(() => ({ draft, update, reset }), [draft, update, reset]);
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;

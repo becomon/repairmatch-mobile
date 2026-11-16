@@ -1,20 +1,14 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { applianceLabel } from '@/features/catalog/appliances';
-import { ApplianceTile } from '@/features/requests/ApplianceTile';
-import { useDraft } from '@/features/requests/draft';
-import { listApplianceTypes } from '@/shared/api/endpoints';
-import { useApiQuery } from '@/shared/hooks/useApiQuery';
-import { colors, radius } from '@/shared/theme';
-import { Button, ErrorState, Icon, LoadingState, Screen, ScreenHeader, StepProgress, Text, TextField } from '@/shared/ui';
-
-const MIN_CHARS = 10;
+import { ApplianceTypePicker, useDraft } from '@/features/requests';
+import { MAX_DESCRIPTION_CHARS, MIN_DESCRIPTION_CHARS } from '@/shared/constants';
+import { colors } from '@/shared/theme';
+import { Button, Screen, ScreenHeader, StepProgress, Text, TextField } from '@/shared/ui';
 
 export default function PublishDescribe() {
   const router = useRouter();
   const { draft, update } = useDraft();
-  const types = useApiQuery((signal) => listApplianceTypes({ signal }), []);
-  const valid = draft.applianceTypeId !== null && draft.description.trim().length >= MIN_CHARS;
+  const valid = draft.applianceTypeId !== null && draft.description.trim().length >= MIN_DESCRIPTION_CHARS;
 
   return (
     <Screen
@@ -27,42 +21,7 @@ export default function PublishDescribe() {
         <Text variant="body" color={colors.textMuted}>Elige tu equipo y cuéntanos qué pasa con tus palabras.</Text>
       </View>
 
-      {types.initialLoading ? (
-        <LoadingState />
-      ) : types.error && !types.data ? (
-        <ErrorState error={types.error} onRetry={types.refetch} />
-      ) : (
-        <View style={{ gap: 8 }} accessibilityRole="radiogroup">
-          {(types.data ?? []).map((t) => {
-            const selected = draft.applianceTypeId === t.id;
-            return (
-              <Pressable
-                key={t.id}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: selected }}
-                onPress={() => update({ applianceTypeId: t.id })}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: 12,
-                  minHeight: 64,
-                  borderRadius: radius.lg,
-                  borderWidth: selected ? 2 : 1,
-                  borderColor: selected ? colors.primary : colors.border,
-                  backgroundColor: selected ? colors.primarySoft : colors.surface,
-                }}
-              >
-                <ApplianceTile name={t.name} />
-                <View style={{ flex: 1 }}>
-                  <Text variant="bodyStrong">{applianceLabel(t.name)}</Text>
-                </View>
-                <Icon name={selected ? 'radio-button-on' : 'radio-button-off'} size={22} color={selected ? colors.primary : colors.textMuted} />
-              </Pressable>
-            );
-          })}
-        </View>
-      )}
+      <ApplianceTypePicker layout="list" value={draft.applianceTypeId} onChange={(applianceTypeId) => update({ applianceTypeId })} />
 
       <TextField
         label="Describe la falla"
@@ -70,8 +29,8 @@ export default function PublishDescribe() {
         onChangeText={(description) => update({ description })}
         placeholder="Ej. Mi lavadora LG no centrifuga y deja la ropa empapada."
         multiline
-        maxLength={5000}
-        hint={draft.description.trim().length < MIN_CHARS ? `Escribe al menos ${MIN_CHARS} caracteres.` : undefined}
+        maxLength={MAX_DESCRIPTION_CHARS}
+        hint={draft.description.trim().length < MIN_DESCRIPTION_CHARS ? `Escribe al menos ${MIN_DESCRIPTION_CHARS} caracteres.` : undefined}
       />
     </Screen>
   );

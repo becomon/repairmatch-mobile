@@ -1,34 +1,14 @@
-import { useState } from 'react';
 import { Image, Platform, Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { choosePhoto } from '@/features/requests/choosePhoto';
-import { useDraft } from '@/features/requests/draft';
-import { MAX_PHOTOS } from '@/features/requests/publish';
-import { friendlyError } from '@/shared/api/errors';
+import { usePublishPhotos } from '@/features/requests';
+import { pluralize } from '@/shared/format';
+import { MAX_PHOTOS } from '@/shared/constants';
 import { colors, radius } from '@/shared/theme';
 import { Banner, Button, Icon, Screen, ScreenHeader, StepProgress, Text } from '@/shared/ui';
 
 export default function PublishPhotos() {
   const router = useRouter();
-  const { draft, update } = useDraft();
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const full = draft.photos.length >= MAX_PHOTOS;
-
-  async function add(source: 'camera' | 'gallery') {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      const photo = await choosePhoto(source);
-      if (photo) update({ photos: [...draft.photos, photo] });
-    } catch (cause) {
-      setError(friendlyError(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
-
+  const { photos, full, busy, error, add, remove } = usePublishPhotos();
   const next = () => router.push('/publish/location');
 
   return (
@@ -41,7 +21,7 @@ export default function PublishPhotos() {
           right={<Button label="Omitir" variant="ghost" compact onPress={next} />}
         />
       }
-      footer={<Button label={draft.photos.length ? `Continuar con ${draft.photos.length} ${draft.photos.length === 1 ? 'foto' : 'fotos'}` : 'Continuar sin fotos'} onPress={next} />}
+      footer={<Button label={photos.length ? `Continuar con ${pluralize(photos.length, 'foto', 'fotos')}` : 'Continuar sin fotos'} onPress={next} />}
     >
       <StepProgress step={3} total={4} />
       <Text variant="body" color={colors.textMuted}>
@@ -51,25 +31,25 @@ export default function PublishPhotos() {
       {error ? <Banner tone="danger" message={error} /> : null}
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-        {draft.photos.map((p, i) => (
+        {photos.map((p, i) => (
           <View key={`${p.uri}-${i}`} style={{ width: '47%', flexGrow: 1, aspectRatio: 1, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.neutralSoft }}>
             <Image source={{ uri: p.uri }} style={{ width: '100%', height: '100%' }} accessibilityLabel={`Foto ${i + 1} del electrodoméstico`} />
             {i === 0 ? (
               <View style={{ position: 'absolute', left: 8, bottom: 8, backgroundColor: colors.text, borderRadius: radius.sm, paddingHorizontal: 8, paddingVertical: 3 }}>
-                <Text variant="caption" color="#ffffff">Portada</Text>
+                <Text variant="caption" color={colors.white}>Portada</Text>
               </View>
             ) : null}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`Quitar foto ${i + 1}`}
-              onPress={() => update({ photos: draft.photos.filter((_, idx) => idx !== i) })}
-              style={{ position: 'absolute', top: 6, right: 6, width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(31,26,22,0.7)', alignItems: 'center', justifyContent: 'center' }}
+              onPress={() => remove(i)}
+              style={{ position: 'absolute', top: 6, right: 6, width: 36, height: 36, borderRadius: 18, backgroundColor: colors.photoScrim, alignItems: 'center', justifyContent: 'center' }}
             >
-              <Icon name="close" size={20} color="#ffffff" />
+              <Icon name="close" size={20} color={colors.white} />
             </Pressable>
           </View>
         ))}
-        {draft.photos.length === 0 ? (
+        {photos.length === 0 ? (
           <View style={{ width: '100%', alignItems: 'center', gap: 8, paddingVertical: 32, borderRadius: radius.lg, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.border, backgroundColor: colors.surface }}>
             <Icon name="camera-outline" size={36} color={colors.textMuted} />
             <Text variant="small" color={colors.textMuted}>Aún no agregaste fotos</Text>

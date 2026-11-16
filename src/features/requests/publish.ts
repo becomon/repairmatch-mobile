@@ -1,15 +1,12 @@
 import { requestsApi } from '@/shared/api/endpoints';
 import type { ServiceRequest } from '@/shared/api/types';
-import type { ImagePickerAsset } from 'expo-image-picker';
-import { setLastPhotoError, setPendingPhotos, uploadEvidence } from '../evidences/pendingPhotos';
+import { uploadRequestPhotos } from '@/features/evidences';
 import type { PublishDraft } from './draft';
 
 export interface PublishResult {
   request: ServiceRequest;
   failedPhotos: number;
 }
-
-export const MAX_PHOTOS = 5;
 
 /**
  * Creates the request first (evidences need its id), then uploads each photo to Cloudinary and
@@ -29,17 +26,8 @@ export async function publishDraft(draft: PublishDraft, onProgress?: (message: s
     longitude: draft.location.longitude,
   });
 
-  const failed: ImagePickerAsset[] = [];
-  for (let i = 0; i < draft.photos.length; i++) {
-    onProgress?.(`Subiendo foto ${i + 1} de ${draft.photos.length}…`);
-    try {
-      await uploadEvidence(request.id, draft.photos[i]!);
-    } catch (error) {
-      setLastPhotoError(request.id, error);
-      failed.push(draft.photos[i]!);
-    }
-  }
-  // Keep failed photos so the detail screen can retry them without taking them again.
-  setPendingPhotos(request.id, failed);
-  return { request, failedPhotos: failed.length };
+  const failedPhotos = await uploadRequestPhotos(request.id, draft.photos, (done, total) =>
+    onProgress?.(`Subiendo foto ${done} de ${total}…`),
+  );
+  return { request, failedPhotos };
 }

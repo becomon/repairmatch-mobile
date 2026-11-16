@@ -3,7 +3,8 @@ import { ScrollView, View } from 'react-native';
 import { friendlyError } from '@/shared/api/errors';
 import { colors } from '@/shared/theme';
 import { Banner, Button, Card, FilterChip, Icon, Text } from '@/shared/ui';
-import { DISTRICTS, LocationDeniedError, getCurrentCoords, type PickedLocation } from './location';
+import { LocationDeniedError, getCurrentCoords, type PickedLocation } from '@/shared/location';
+import { DISTRICTS } from './districts';
 
 interface Props {
   value: PickedLocation | null;

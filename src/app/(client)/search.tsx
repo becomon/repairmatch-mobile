@@ -1,37 +1,14 @@
-import { useState } from 'react';
 import { View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useDraft } from '@/features/requests/draft';
-import { RequestCard } from '@/features/requests/RequestCard';
-import { aiApi } from '@/shared/api/endpoints';
-import { useApiQuery } from '@/shared/hooks/useApiQuery';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useLocalSearchParams } from 'expo-router';
+import { RequestCard, useRequestSearch } from '@/features/requests';
+import { MAX_SEARCH_CHARS } from '@/shared/constants';
 import { colors, radius } from '@/shared/theme';
 import { AiSearchBox, Button, EmptyState, ErrorState, Icon, LoadingState, Screen, ScreenHeader, SectionHeader, Text } from '@/shared/ui';
 
-const MIN_CHARS = 3;
-
 /** Natural-language search over the client's own requests, with the chips the model understood. */
 export default function SearchScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams<{ q?: string }>();
-  const { reset, update } = useDraft();
-  const [text, setText] = useState(params.q ?? '');
-  const query = useDebounce(text.trim(), 450);
-  const enabled = query.length >= MIN_CHARS;
-
-  const search = useApiQuery((signal) => {
-    void signal;
-    return aiApi.search(query, 0, 20);
-  }, [query], { enabled });
-
-  const results = search.data?.results.content ?? [];
-
-  function publishNew() {
-    reset();
-    update({ description: text.trim() });
-    router.push('/publish/confirm');
-  }
+  const { text, setText, enabled, search, results, canPublish, publishNew } = useRequestSearch(params.q ?? '');
 
   return (
     <Screen
@@ -42,7 +19,7 @@ export default function SearchScreen() {
           <Text variant="smallStrong">¿Es un problema nuevo?</Text>
           <Text variant="small" color={colors.textMuted}>Publica una solicitud con estos datos ya llenos. Tú los revisas antes de enviar.</Text>
           <View style={{ paddingTop: 8 }}>
-            <Button label="Publicar con estos datos" icon="sparkles" sweep onPress={publishNew} disabled={text.trim().length < 10} />
+            <Button label="Publicar con estos datos" icon="sparkles" sweep onPress={publishNew} disabled={!canPublish} />
           </View>
         </View>
       }
@@ -54,7 +31,7 @@ export default function SearchScreen() {
         placeholder="ej. 'Mi lavadora hace ruido y no bota agua'"
         autoFocus={!params.q}
         returnKeyType="search"
-        maxLength={300}
+        maxLength={MAX_SEARCH_CHARS}
       />
 
       {!enabled ? (

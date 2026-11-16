@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { RequestCard } from '@/features/requests/RequestCard';
-import { REQUEST_STATUS_LABEL } from '@/features/requests/status';
+import { REQUEST_STATUS_LABEL, RequestCard } from '@/features/requests';
 import { requestsApi } from '@/shared/api/endpoints';
 import type { RequestStatus } from '@/shared/api/types';
+import { LIST_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '@/shared/constants';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { usePagedList } from '@/shared/hooks/usePagedList';
 import { colors, GUTTER, TOUCH } from '@/shared/theme';
@@ -23,10 +23,10 @@ export default function RequestsTab() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<RequestStatus | undefined>(undefined);
   const [sort, setSort] = useState<'newest' | 'oldest'>('newest');
-  const query = useDebounce(search.trim(), 400);
+  const query = useDebounce(search.trim(), SEARCH_DEBOUNCE_MS);
 
   const list = usePagedList(
-    (page, signal) => requestsApi.list({ page, size: 10, status, search: query || undefined, sort }, { signal }),
+    (page, signal) => requestsApi.list({ page, size: LIST_PAGE_SIZE, status, search: query || undefined, sort }, { signal }),
     [status, query, sort],
     { refetchOnFocus: true },
   );
@@ -42,7 +42,7 @@ export default function RequestsTab() {
           subtitle={list.total > 0 || filtered ? `${list.total} en total` : undefined}
           right={
             <Pressable accessibilityRole="button" accessibilityLabel="Nueva solicitud" onPress={() => router.push('/publish')} style={{ width: TOUCH, height: TOUCH, marginLeft: 8, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="add" size={26} color="#ffffff" />
+              <Icon name="add" size={26} color={colors.white} />
             </Pressable>
           }
         />

@@ -1,16 +1,12 @@
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { applianceTitle } from '@/features/catalog/appliances';
+import { ApplianceTile } from '@/features/catalog';
 import { timeAgo } from '@/shared/format';
 import type { ServiceRequest } from '@/shared/api/types';
 import { colors } from '@/shared/theme';
 import { Card, StatusChip, Text } from '@/shared/ui';
-import { ApplianceTile } from './ApplianceTile';
+import { requestTitle } from './requestTitle';
 import { REQUEST_STATUS_LABEL, REQUEST_STATUS_TONE } from './status';
-
-export function requestTitle(r: Pick<ServiceRequest, 'applianceTypeName' | 'brand'>): string {
-  return applianceTitle(r.applianceTypeName, r.brand);
-}
 
 export function RequestCard({ request }: { request: ServiceRequest }) {
   const router = useRouter();
