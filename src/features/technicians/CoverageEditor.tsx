@@ -6,6 +6,7 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 import { colors, radius, TOUCH } from '@/shared/theme';
 import { Banner, Button, Card, FilterChip, Icon, SearchInput, Text } from '@/shared/ui';
 import { CoverageMap } from './CoverageMap';
+import type { CoverageMapProps } from './coverageMapTypes';
 import { searchAddresses, reverseGeocode, type AddressSuggestion } from './geocoding';
 import { radiusStep, RADIUS_MAX, RADIUS_MIN } from './profileValidation';
 
@@ -19,6 +20,9 @@ interface Props {
   onRadiusChange: (km: number) => void;
   radiusError?: string | undefined;
   locationError?: string | undefined;
+  /** Approximate nearby requests drawn on the map. */
+  demand?: CoverageMapProps['demand'];
+  onOpenDemand?: CoverageMapProps['onOpenDemand'];
 }
 
 interface SearchState {
@@ -31,7 +35,7 @@ interface SearchState {
  * Coverage zone editor: search a real address, use the GPS or move the pin on the map, then pick
  * the radius. Every pin move is named through reverse geocoding so the saved zone reads as an address.
  */
-export function CoverageEditor({ value, onChange, radiusKm, onRadiusChange, radiusError, locationError }: Props) {
+export function CoverageEditor({ value, onChange, radiusKm, onRadiusChange, radiusError, locationError, demand, onOpenDemand }: Props) {
   const [text, setText] = useState('');
   const query = useDebounce(text.trim(), 700);
   const [found, setFound] = useState<SearchState | null>(null);
@@ -147,7 +151,7 @@ export function CoverageEditor({ value, onChange, radiusKm, onRadiusChange, radi
 
       {value ? (
         <>
-          <CoverageMap latitude={map.latitude} longitude={map.longitude} radiusKm={radiusKm} onPinMoved={(lat, lng) => place(lat, lng, 'Punto marcado en el mapa')} />
+          <CoverageMap latitude={map.latitude} longitude={map.longitude} radiusKm={radiusKm} onPinMoved={(lat, lng) => place(lat, lng, 'Punto marcado en el mapa')} demand={demand} onOpenDemand={onOpenDemand} />
           <View style={styles.selected}>
             <Icon name="location" size={20} color={colors.primary} />
             <View style={{ flex: 1 }}>

@@ -39,14 +39,14 @@ export default function RegisterScreen() {
   }
 
   return (
-    <Screen
+    <Screen band="sand"
       header={<ScreenHeader title="Crea tu cuenta" back fallbackHref="/login" />}
       footer={
         <View style={{ gap: 8 }}>
           <Button label="Crear cuenta" onPress={() => void submit()} loading={busy} />
           <Link href="/login" asChild>
             <Pressable accessibilityRole="link" style={{ minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
-              <Text variant="bodyStrong" color={colors.primary}>¿Ya tienes cuenta? Inicia sesión</Text>
+              <Text variant="bodyStrong" color={colors.link}>¿Ya tienes cuenta? Inicia sesión</Text>
             </Pressable>
           </Link>
         </View>

@@ -37,12 +37,12 @@ interface Rule {
 // Same names the web app uses (src/features/requests/applianceLabel.ts), so both clients agree.
 // The backend still sends the catalog in English until the 2-type Spanish catalog lands.
 const RULES: Rule[] = [
-  { kind: 'air-conditioner', test: /air.?condition|aire|clima/, label: 'Aire acondicionado', icon: 'air-conditioner', fg: colors.teal, bg: '#dff3f1' },
-  { kind: 'microwave', test: /micro/, label: 'Microondas', icon: 'microwave', fg: colors.accentDark, bg: colors.accentSoft },
-  { kind: 'dishwasher', test: /dishwasher|lavavaj/, label: 'Lavavajillas', icon: 'dishwasher', fg: colors.primary, bg: colors.primarySoft },
-  { kind: 'washer', test: /washing|washer|lavad/, label: 'Lavadora', icon: 'washing-machine', fg: colors.primary, bg: colors.primarySoft },
-  { kind: 'dryer', test: /dryer|secad/, label: 'Secadora', icon: 'tumble-dryer', fg: colors.warning, bg: colors.warningSoft },
-  { kind: 'fridge', test: /refri|fridge|nevera|frigor/, label: 'Refrigeradora', icon: 'fridge', fg: '#c24a0c', bg: colors.accentSoft },
+  { kind: 'air-conditioner', test: /air.?condition|aire|clima/, label: 'Aire acondicionado', icon: 'air-conditioner', fg: colors.freshStrong, bg: colors.freshSoft },
+  { kind: 'microwave', test: /micro/, label: 'Microondas', icon: 'microwave', fg: colors.warning, bg: colors.warningSoft },
+  { kind: 'dishwasher', test: /dishwasher|lavavaj/, label: 'Lavavajillas', icon: 'dishwasher', fg: colors.slate, bg: colors.surface2 },
+  { kind: 'washer', test: /washing|washer|lavad/, label: 'Lavadora', icon: 'washing-machine', fg: colors.freshStrong, bg: colors.freshSoft },
+  { kind: 'dryer', test: /dryer|secad/, label: 'Secadora', icon: 'tumble-dryer', fg: colors.slate, bg: '#e3eae6' },
+  { kind: 'fridge', test: /refri|fridge|nevera|frigor/, label: 'Refrigeradora', icon: 'fridge', fg: colors.primary, bg: colors.primarySoft },
   { kind: 'oven', test: /oven|horno|stove|cocina/, label: 'Horno', icon: 'stove', fg: colors.danger, bg: colors.dangerSoft },
 ];
 

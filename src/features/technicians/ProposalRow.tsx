@@ -38,8 +38,8 @@ export function ProposalRow({ proposal, serviceId }: Props) {
       <Text variant="small" color={colors.textSoft} numberOfLines={2}>«{proposal.conditions}»</Text>
       {open ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 32 }}>
-          <Text variant="smallStrong" color={colors.primary} style={{ flex: 1 }}>El cliente eligió tu propuesta · Ver servicio</Text>
-          <Icon name="chevron-forward" size={18} color={colors.primary} />
+          <Text variant="smallStrong" color={colors.link} style={{ flex: 1 }}>El cliente eligió tu propuesta · Ver servicio</Text>
+          <Icon name="chevron-forward" size={18} color={colors.link} />
         </View>
       ) : null}
     </Card>

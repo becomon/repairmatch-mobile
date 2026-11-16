@@ -10,7 +10,7 @@ export function SectionHeader({ title, actionLabel, onAction }: { title: string;
       <Text variant="heading" accessibilityRole="header" style={styles.flex}>{title}</Text>
       {actionLabel && onAction ? (
         <Pressable accessibilityRole="button" onPress={onAction} style={styles.action} hitSlop={8}>
-          <Text variant="smallStrong" color={colors.primary}>{actionLabel}</Text>
+          <Text variant="smallStrong" color={colors.link}>{actionLabel}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -19,8 +19,8 @@ export function SectionHeader({ title, actionLabel, onAction }: { title: string;
 
 type BannerTone = 'info' | 'success' | 'warning' | 'danger';
 const bannerColors: Record<BannerTone, { bg: string; fg: string; icon: IconName }> = {
-  info: { bg: colors.primarySoft, fg: colors.primary, icon: 'information-circle' },
-  success: { bg: colors.successSoft, fg: colors.success, icon: 'checkmark-circle' },
+  info: { bg: colors.infoSoft, fg: colors.info, icon: 'information-circle' },
+  success: { bg: colors.freshSoft, fg: colors.freshStrong, icon: 'checkmark-circle' },
   warning: { bg: colors.warningSoft, fg: colors.warning, icon: 'alert-circle' },
   danger: { bg: colors.dangerSoft, fg: colors.danger, icon: 'close-circle' },
 };

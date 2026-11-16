@@ -6,6 +6,6 @@ export const tabScreenOptions = {
   tabBarActiveTintColor: colors.primary,
   tabBarInactiveTintColor: colors.textMuted,
   tabBarLabelStyle: { fontFamily: fonts.bodySemi, fontSize: 12 },
-  tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+  tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.navLine },
   tabBarItemStyle: { minHeight: 48 },
 } as const;

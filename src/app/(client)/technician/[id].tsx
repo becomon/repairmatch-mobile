@@ -5,7 +5,7 @@ import { techniciansApi } from '@/shared/api/endpoints';
 import { formatDay } from '@/shared/format';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { colors } from '@/shared/theme';
-import { Avatar, Card, EmptyState, ErrorState, InfoChip, LoadingState, Screen, ScreenHeader, SectionHeader, Stars, Text } from '@/shared/ui';
+import { Avatar, Card, EmptyState, ErrorState, IdentityPill, InfoChip, LoadingState, Screen, ScreenHeader, SectionHeader, Stars, Text } from '@/shared/ui';
 
 /** Public technician profile: reputation, specialties and reviews (no contact data). */
 export default function TechnicianPublicProfile() {
@@ -25,6 +25,7 @@ export default function TechnicianPublicProfile() {
       <Card style={{ alignItems: 'center', gap: 8, paddingVertical: 24 }}>
         <Avatar name={p.fullName} size={72} />
         <Text variant="title">{p.fullName}</Text>
+        {p.identityVerified ? <View><IdentityPill /></View> : null}
         <Text variant="small" color={colors.textMuted}>
           Técnico{p.experienceYears !== undefined ? ` · ${p.experienceYears} ${p.experienceYears === 1 ? 'año' : 'años'} de experiencia` : ''}
         </Text>

@@ -1,8 +1,7 @@
-import { api } from '@/shared/api/client';
 import { requestsApi } from '@/shared/api/endpoints';
 import type { ServiceRequest } from '@/shared/api/types';
-import { createEvidenceApi } from '../evidences/api';
-import { uploadPhoto } from '../evidences/cloudinary';
+import type { ImagePickerAsset } from 'expo-image-picker';
+import { setLastPhotoError, setPendingPhotos, uploadEvidence } from '../evidences/pendingPhotos';
 import type { PublishDraft } from './draft';
 
 export interface PublishResult {
@@ -30,16 +29,17 @@ export async function publishDraft(draft: PublishDraft, onProgress?: (message: s
     longitude: draft.location.longitude,
   });
 
-  const evidences = createEvidenceApi(api);
-  let failedPhotos = 0;
+  const failed: ImagePickerAsset[] = [];
   for (let i = 0; i < draft.photos.length; i++) {
     onProgress?.(`Subiendo foto ${i + 1} de ${draft.photos.length}…`);
     try {
-      const metadata = await uploadPhoto(draft.photos[i]!);
-      await evidences.add(request.id, metadata);
-    } catch {
-      failedPhotos++;
+      await uploadEvidence(request.id, draft.photos[i]!);
+    } catch (error) {
+      setLastPhotoError(request.id, error);
+      failed.push(draft.photos[i]!);
     }
   }
-  return { request, failedPhotos };
+  // Keep failed photos so the detail screen can retry them without taking them again.
+  setPendingPhotos(request.id, failed);
+  return { request, failedPhotos: failed.length };
 }

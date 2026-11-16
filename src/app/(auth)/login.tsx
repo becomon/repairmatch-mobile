@@ -35,14 +35,14 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen
+    <Screen band="mint"
       contentStyle={{ gap: 20, paddingTop: 32 }}
       footer={
         <View style={{ gap: 8 }}>
           <Button label="Iniciar sesión" onPress={() => void submit()} loading={busy} />
           <Link href="/register" asChild>
             <Pressable accessibilityRole="link" style={{ minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
-              <Text variant="bodyStrong" color={colors.primary}>¿No tienes cuenta? Crear cuenta</Text>
+              <Text variant="bodyStrong" color={colors.link}>¿No tienes cuenta? Crear cuenta</Text>
             </Pressable>
           </Link>
         </View>

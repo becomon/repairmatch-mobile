@@ -48,7 +48,7 @@ export default function WorkTab() {
   }, [needsMore, loadMore, proposals.items.length]);
 
   return (
-    <Screen
+    <Screen band="sand"
       scroll={false}
       inTabs
       header={

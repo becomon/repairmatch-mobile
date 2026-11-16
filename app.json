@@ -42,7 +42,8 @@
         {
           "locationWhenInUsePermission": "RepairMatch usa tu ubicación para mostrar tu solicitud solo a técnicos de tu zona."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "scheme": "repairmatch"
   }

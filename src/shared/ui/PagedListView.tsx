@@ -7,6 +7,7 @@ import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
 import { LoadingState } from './LoadingState';
 import { Text } from './Text';
+import { Reveal } from './Reveal';
 
 interface Props<T> {
   list: PagedList<T>;
@@ -25,7 +26,7 @@ export function PagedListView<T>({ list, renderItem, keyExtractor, empty, header
     <FlatList
       data={list.items}
       keyExtractor={keyExtractor}
-      renderItem={({ item }) => renderItem(item)}
+      renderItem={({ item, index }) => (index < 6 ? <Reveal index={index}>{renderItem(item)}</Reveal> : renderItem(item))}
       ItemSeparatorComponent={Separator}
       contentContainerStyle={[styles.content, { paddingBottom: (inTabs ? 0 : insets.bottom) + 24 }]}
       ListHeaderComponent={header}

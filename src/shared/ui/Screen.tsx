@@ -1,6 +1,7 @@
 import { KeyboardAvoidingView, RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, GUTTER, shadow } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, GUTTER, gradients, shadow } from '../theme';
 
 interface Props {
   children: React.ReactNode;
@@ -16,10 +17,12 @@ interface Props {
   /** Screens inside the tab bar do not add the bottom safe-area inset. */
   inTabs?: boolean;
   contentStyle?: ViewStyle;
+  /** Soft warm band behind the top of the screen, like the web landing bands. */
+  band?: 'mint' | 'sand';
 }
 
 /** Page wrapper: safe areas, 20pt gutters, optional sticky footer and keyboard avoidance. */
-export function Screen({ children, header, footer, scroll = true, onRefresh, refreshing = false, inTabs = false, contentStyle }: Props) {
+export function Screen({ children, header, footer, scroll = true, onRefresh, refreshing = false, inTabs = false, contentStyle, band }: Props) {
   const insets = useSafeAreaInsets();
   const bottomInset = inTabs ? 0 : insets.bottom;
   return (
@@ -27,6 +30,13 @@ export function Screen({ children, header, footer, scroll = true, onRefresh, ref
       style={[styles.root, { paddingTop: insets.top }]}
       behavior="padding"
     >
+      {band ? (
+        <LinearGradient
+          pointerEvents="none"
+          colors={[...(band === 'mint' ? gradients.bandMint : gradients.bandSand), colors.background]}
+          style={styles.band}
+        />
+      ) : null}
       {header}
       {scroll ? (
         <ScrollView
@@ -49,6 +59,7 @@ export function Screen({ children, header, footer, scroll = true, onRefresh, ref
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
+  band: { position: 'absolute', top: 0, left: 0, right: 0, height: 320, opacity: 0.75 },
   content: { paddingHorizontal: GUTTER, paddingTop: 8, gap: 16 },
   footer: {
     paddingHorizontal: GUTTER,
@@ -56,7 +67,7 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.navLine,
     ...shadow.sheet,
   },
 });

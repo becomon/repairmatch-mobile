@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { useAuth, useUser } from '@/features/auth/AuthProvider';
+import { IdentityCard } from '@/features/identity/IdentityCard';
 import { colors } from '@/shared/theme';
 import { Avatar, Button, Card, ConfirmDialog, InfoRow, Screen, ScreenHeader, Text } from '@/shared/ui';
 
@@ -26,6 +27,7 @@ export default function ClientProfileTab() {
         <InfoRow label="Cuenta" value="Cliente" />
         <InfoRow label="Correo" value={user.email} />
       </Card>
+      <IdentityCard />
       <View style={{ paddingTop: 8 }}>
         <Button label="Cerrar sesión" variant="danger" icon="log-out-outline" onPress={() => setConfirming(true)} />
       </View>

@@ -5,6 +5,7 @@ import { AddPhoto } from '@/features/evidences/AddPhoto';
 import { PhotoGallery } from '@/features/evidences/PhotoGallery';
 import { useDraft } from '@/features/requests/draft';
 import { createEvidenceApi } from '@/features/evidences/api';
+import { getLastPhotoError, getPendingPhotos, retryPendingPhotos } from '@/features/evidences/pendingPhotos';
 import { ApplianceTile } from '@/features/requests/ApplianceTile';
 import { getCurrentCoords, LocationDeniedError } from '@/features/requests/location';
 import { requestTitle } from '@/features/requests/RequestCard';
@@ -37,6 +38,21 @@ export default function RequestDetail() {
   const [cancelling, setCancelling] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ tone: 'success' | 'danger'; message: string } | null>(null);
+  const [pendingCount, setPendingCount] = useState(() => getPendingPhotos(id).length);
+  const [retrying, setRetrying] = useState(false);
+
+  async function retryPhotos() {
+    if (retrying) return;
+    setRetrying(true);
+    const before = getPendingPhotos(id).length;
+    const left = await retryPendingPhotos(id);
+    setRetrying(false);
+    setPendingCount(left);
+    if (left < before) evidences.refetch();
+    setNotice(left === 0
+      ? { tone: 'success', message: 'Listo, subimos tus fotos.' }
+      : { tone: 'danger', message: `Aún no pudimos subir ${pluralize(left, 'foto', 'fotos')}. ${getLastPhotoError(id) ?? "Revisa tu conexión y vuelve a intentar."}` });
+  }
 
   async function cancel() {
     setBusy(true);
@@ -110,7 +126,14 @@ export default function RequestDetail() {
 
   return (
     <Screen header={header} footer={footer} onRefresh={request.refetch} refreshing={request.loading}>
-      {photosFailed > 0 ? <Banner tone="warning" message={`Publicamos tu solicitud, pero ${pluralize(photosFailed, 'foto no se pudo subir', 'fotos no se pudieron subir')}. Puedes agregarlas aquí abajo.`} /> : null}
+      {pendingCount > 0 ? (
+        <Card style={{ gap: 12 }}>
+          <Banner tone="warning" message={`Publicamos tu solicitud, pero ${pluralize(pendingCount, 'foto no se pudo subir', 'fotos no se pudieron subir')}. Las guardamos: reintenta sin volver a tomarlas.${getLastPhotoError(id) ? ` Motivo: ${getLastPhotoError(id)}` : ""}`} />
+          <Button label={retrying ? 'Subiendo fotos…' : `Reintentar ${pluralize(pendingCount, 'foto', 'fotos')}`} icon="refresh" loading={retrying} onPress={() => void retryPhotos()} />
+        </Card>
+      ) : photosFailed > 0 && !evidences.data?.length ? (
+        <Banner tone="warning" message={`Publicamos tu solicitud, pero ${pluralize(photosFailed, 'foto no se pudo subir', 'fotos no se pudieron subir')}. Puedes agregarlas aquí abajo.`} />
+      ) : null}
       {notice ? <Banner tone={notice.tone} message={notice.message} /> : null}
 
       <Card style={{ gap: 12 }}>

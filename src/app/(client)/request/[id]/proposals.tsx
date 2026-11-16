@@ -10,7 +10,7 @@ import type { RecommendedProposal } from '@/shared/api/types';
 import { formatDistance, formatMoney, formatWhen } from '@/shared/format';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { colors, GUTTER } from '@/shared/theme';
-import { Avatar, Banner, Button, Card, ConfirmDialog, EmptyState, ErrorState, FilterChip, InfoChip, LoadingState, RatingSummary, Screen, ScreenHeader, Text } from '@/shared/ui';
+import { Avatar, Banner, Button, Card, ConfirmDialog, EmptyState, ErrorState, FilterChip, IdentityPill, InfoChip, LoadingState, RatingSummary, Reveal, Screen, ScreenHeader, Text, VerifiedPill } from '@/shared/ui';
 
 type Sort = 'recommended' | 'cost' | 'rating' | 'soonest';
 
@@ -110,29 +110,25 @@ export default function CompareProposals() {
             ))}
           </ScrollView>
 
-          {items.map((o) => {
+          {items.map((o, index) => {
             const p = o.proposal;
             const isSelected = p.id === selectedId;
             const top = o.recommended && sort === 'recommended';
             return (
+              <Reveal key={p.id} index={index}>
               <Card
-                key={p.id}
+                glow={!top}
                 highlight={top || isSelected}
                 onPress={canAccept ? () => setSelectedId(isSelected ? null : p.id) : undefined}
                 accessibilityLabel={`Propuesta de ${p.technicianName}, ${formatMoney(p.diagnosticCost)}`}
                 style={{ gap: 10, ...(isSelected ? { borderColor: colors.primary, backgroundColor: colors.primarySoft } : null) }}
               >
-                {top ? (
-                  <View style={{ alignSelf: 'flex-start', backgroundColor: colors.accentSoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
-                    <Text variant="caption" color={colors.accentDark}>
-                      Recomendado{o.reasons[0] ? `: ${o.reasons[0].label}` : ''}
-                    </Text>
-                  </View>
-                ) : null}
+                {top ? <VerifiedPill label={`Recomendado${o.reasons[0] ? `: ${o.reasons[0].label}` : ''}`} /> : null}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                   <Avatar name={p.technicianName} />
                   <View style={{ flex: 1, gap: 2 }}>
                     <Text variant="bodyStrong" numberOfLines={1}>{p.technicianName}</Text>
+                    {p.identityVerified ? <IdentityPill /> : null}
                     <RatingSummary average={o.averageRating} count={o.reviewCount} />
                     {o.distanceKm !== null ? <Text variant="small" color={colors.textMuted}>a {formatDistance(o.distanceKm)}</Text> : null}
                   </View>
@@ -153,9 +149,10 @@ export default function CompareProposals() {
                   onPress={() => router.push({ pathname: '/technician/[id]', params: { id: p.technicianId } })}
                   style={{ minHeight: 44, justifyContent: 'center' }}
                 >
-                  <Text variant="smallStrong" color={colors.primary}>Ver perfil de {p.technicianName.split(' ')[0]}</Text>
+                  <Text variant="smallStrong" color={colors.link}>Ver perfil de {p.technicianName.split(' ')[0]}</Text>
                 </Pressable>
               </Card>
+              </Reveal>
             );
           })}
         </>

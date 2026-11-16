@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth, useUser } from '@/features/auth/AuthProvider';
 import { applianceLabel } from '@/features/catalog/appliances';
+import { IdentityCard } from '@/features/identity/IdentityCard';
 import { ApplianceTile } from '@/features/requests/ApplianceTile';
 import type { PickedLocation } from '@/features/requests/location';
 import { CoverageEditor } from '@/features/technicians/CoverageEditor';
+import { useNearbyDemand, withinRadius } from '@/features/technicians/demand';
 import { reverseGeocode } from '@/features/technicians/geocoding';
 import {
   BIO_MAX,
@@ -19,7 +22,7 @@ import { listApplianceTypes, techniciansApi } from '@/shared/api/endpoints';
 import type { ApplianceType, TechnicianProfile } from '@/shared/api/types';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { colors, radius } from '@/shared/theme';
-import { Avatar, Banner, Button, Card, ConfirmDialog, ErrorState, Icon, LoadingState, RatingSummary, Screen, ScreenHeader, SectionHeader, Text, TextField } from '@/shared/ui';
+import { Avatar, Banner, Button, Card, ConfirmDialog, ErrorState, Icon, IdentityPill, LoadingState, RatingSummary, Screen, ScreenHeader, SectionHeader, Text, TextField } from '@/shared/ui';
 
 const SAVED_LABEL = 'Zona guardada';
 
@@ -60,6 +63,8 @@ interface ScreenProps {
 function ProfileScreen({ profile, types, rating, onSaved }: ScreenProps) {
   const user = useUser();
   const { logout } = useAuth();
+  const router = useRouter();
+  const nearby = useNearbyDemand();
   const [experience, setExperience] = useState(profile.experienceYears !== undefined ? String(profile.experienceYears) : '');
   const [phone, setPhone] = useState(profile.phone ?? '');
   const [bio, setBio] = useState(profile.bio ?? '');
@@ -74,6 +79,7 @@ function ProfileScreen({ profile, types, rating, onSaved }: ScreenProps) {
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const demand = useMemo(() => ({ ready: nearby.ready, points: withinRadius(nearby.points, radiusKm) }), [nearby.ready, nearby.points, radiusKm]);
 
   // Name the saved point once so the zone reads as an address instead of "Zona guardada".
   const savedLat = profile.latitude;
@@ -136,7 +142,10 @@ function ProfileScreen({ profile, types, rating, onSaved }: ScreenProps) {
         <Text variant="heading">{user.name}</Text>
         <Text variant="small" color={colors.textMuted}>{user.email}</Text>
         {rating ? <RatingSummary average={rating.averageRating} count={rating.reviewCount} /> : null}
+        {profile.identityVerified ? <View><IdentityPill /></View> : null}
       </Card>
+
+      <IdentityCard />
 
       {!complete ? <Banner tone="warning" message="Elige los equipos que reparas y tu zona de atención para empezar a recibir casos." /> : null}
       {saved ? <Banner tone="success" message="Perfil guardado. Ya puedes ver casos en tu zona." /> : null}
@@ -182,6 +191,8 @@ function ProfileScreen({ profile, types, rating, onSaved }: ScreenProps) {
         radiusKm={radiusKm}
         onRadiusChange={(km) => { setSaved(false); setRadiusKm(km); }}
         radiusError={errors.radius}
+        demand={demand}
+        onOpenDemand={(p) => router.push({ pathname: '/opportunity/[id]', params: { id: String(p.requestId), data: JSON.stringify(p.request) } })}
       />
 
       <SectionHeader title="Sobre ti" />

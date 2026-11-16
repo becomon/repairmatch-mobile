@@ -7,7 +7,7 @@ import { aiApi } from '@/shared/api/endpoints';
 import { useApiQuery } from '@/shared/hooks/useApiQuery';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { colors, radius } from '@/shared/theme';
-import { Button, EmptyState, ErrorState, Icon, LoadingState, Screen, ScreenHeader, SectionHeader, Text, TextField } from '@/shared/ui';
+import { AiSearchBox, Button, EmptyState, ErrorState, Icon, LoadingState, Screen, ScreenHeader, SectionHeader, Text } from '@/shared/ui';
 
 const MIN_CHARS = 3;
 
@@ -35,22 +35,23 @@ export default function SearchScreen() {
 
   return (
     <Screen
+      band="sand"
       header={<ScreenHeader title="Buscar o describir" back fallbackHref="/home" />}
       footer={
         <View style={{ gap: 4 }}>
           <Text variant="smallStrong">¿Es un problema nuevo?</Text>
           <Text variant="small" color={colors.textMuted}>Publica una solicitud con estos datos ya llenos. Tú los revisas antes de enviar.</Text>
           <View style={{ paddingTop: 8 }}>
-            <Button label="Publicar con estos datos" icon="sparkles" onPress={publishNew} disabled={text.trim().length < 10} />
+            <Button label="Publicar con estos datos" icon="sparkles" sweep onPress={publishNew} disabled={text.trim().length < 10} />
           </View>
         </View>
       }
     >
-      <TextField
+      <AiSearchBox
         label="Tu búsqueda"
         value={text}
         onChangeText={setText}
-        placeholder="Ej. la refri que gotea de la semana pasada"
+        placeholder="ej. 'Mi lavadora hace ruido y no bota agua'"
         autoFocus={!params.q}
         returnKeyType="search"
         maxLength={300}
@@ -69,9 +70,9 @@ export default function SearchScreen() {
               <Text variant="smallStrong" color={colors.textSoft}>Entendí esto</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 {search.data.understood.map((chip) => (
-                  <View key={`${chip.key}-${chip.value}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.primarySoft, borderRadius: radius.pill, paddingHorizontal: 12, minHeight: 32 }}>
-                    <Icon name="sparkles" size={12} color={colors.primary} />
-                    <Text variant="smallStrong" color={colors.primary}>{chip.label}</Text>
+                  <View key={`${chip.key}-${chip.value}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.freshSoft, borderRadius: radius.pill, paddingHorizontal: 12, minHeight: 32 }}>
+                    <Icon name="sparkles" size={12} color={colors.freshStrong} />
+                    <Text variant="smallStrong" color={colors.freshStrong}>{chip.label}</Text>
                   </View>
                 ))}
               </View>
