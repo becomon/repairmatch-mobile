@@ -80,9 +80,15 @@ Verification in this session: six isolated tests, TypeScript and ESLint passed. 
 If API logs show PostgreSQL password authentication failure, run npm run backend:repair. This checks authentication through the Docker service hostname (postgres), then recreates only the API. For a confirmed local password mismatch, npm run backend:repair -- --sync-local-password synchronizes the repairmatch role password with the existing PostgreSQL container configuration. It preserves all tables and volumes, and does not reset a password for a DNS/network error. API readiness is checked before reporting success.
 ## Participación
 
+100 % significa que cumplió por completo sus responsabilidades. **Porcentajes acordados por el equipo.**
+
 | Integrante | Aportes implementados | Participación |
 | --- | --- | --- |
-| becomon | Módulo de cámara y galería, avisos de permisos y alternativa de galería, subida sin firma a Cloudinary, registro y consulta de evidencias, pantalla temporal de prueba, pruebas automatizadas y apoyo a la subida web. Prueba física e integración con la base móvil pendientes. | Por acordar con el equipo |
+| Sebas-Leo | Backend: flujo de colaboración y contrato de errores, propuestas y comparación, paginación, IA local, rankings, verificación de identidad con Didit y ubicación aproximada de la demanda; web: base, sistema de diseño, dashboards, landing, modo oscuro y despliegue (Vercel, Render, Neon y Cloudinary); móvil: app con Expo Router y su identidad visual (PR #2 y #3) | 100 % |
+| AdrianPacheco12343 | Backend: entidades, datos iniciales y endpoints de servicios; móvil: prototipo de login, registro, lista y detalle de solicitudes (PR #25, en revisión); pruebas y testeo de la app | 100 % |
+| andrehcv | Backend: perfil del técnico, área de cobertura y motor de compatibilidad; web: perfil del técnico, zona de cobertura, geocodificación real de direcciones y pin en el mapa (PR #13 y #23) | 100 % |
+| becomon | Backend: base Spring Boot, identidad (registro, JWT, refresh, CORS), permisos y Postman; web: subida de fotos desde archivos, evidencias en solicitudes, resumen del inicio y pruebas (PR #20 y #21); móvil: módulo de cámara y galería, subida sin firma a Cloudinary, evidencias y pruebas (PR #1) | 100 % |
+| camilaalfaro-afk | Backend: solicitudes, evidencias, ciclo de la solicitud y contenedor Docker; web: ciclo de vida de los servicios y reseñas (PR #12, #15 y #16) | 100 % |
 
 ## Prueba desde un celular por Wi-Fi
 
