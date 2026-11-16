@@ -109,3 +109,16 @@ El proyecto utiliza SDK 58 para coincidir con Expo Go del equipo. Después de ac
 ## Compatibilidad de subida en SDK 58
 
 Mantén EXPO_PUBLIC_USE_RN_FETCH=1 en .env.local (incluido en .env.example). El módulo envía archivos locales mediante multipart con { uri, name, type }, por lo que necesita el fetch de React Native. Expo 58 instala otro fetch por defecto. Tras cambiar esta variable, detén Metro y ejecuta npx.cmd expo start --clear --lan; vuelve a abrir el proyecto en Expo Go.
+
+## Build del APK
+
+El APK se genera en la nube con EAS Build (perfil `preview`, ver `eas.json`). La clave de Google Maps nunca va en el repositorio: se lee de la variable de entorno `GOOGLE_MAPS_API_KEY` en `app.config.js`.
+
+1. Crea una cuenta en expo.dev e inicia sesión: `npx eas-cli@latest login`.
+2. Vincula el proyecto (crea el id de proyecto en tu cuenta): `npx eas-cli@latest init`.
+3. Crea la variable de la clave de Maps en EAS, con visibilidad `secret`, para el entorno `preview`: `npx eas-cli@latest env:create --name GOOGLE_MAPS_API_KEY --value "<tu-clave>" --environment preview --visibility secret`.
+4. Genera el APK: `npx eas-cli@latest build --platform android --profile preview`. En la primera ejecución acepta crear el keystore de Android.
+5. Copia el SHA-1 en expo.dev, en Credentials, Android, `pe.edu.utec.repairmatch`, Android Keystore. En Google Cloud, restringe la clave a apps Android con ese paquete y ese SHA-1, y activa Maps SDK for Android.
+6. Descarga el APK desde el enlace o el QR del build e instálalo en el celular. El backend en Render tarda unos 50 s en despertar.
+
+Si no defines `GOOGLE_MAPS_API_KEY`, el APK se genera igual, pero los mapas salen en blanco.
