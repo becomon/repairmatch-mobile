@@ -1,14 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
-import { AppState, View } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
-import { friendlyError } from '@/shared/api/errors';
-import { identityApi } from '@/shared/api/endpoints';
+import { View } from 'react-native';
 import type { IdentityStatus } from '@/shared/api/types';
 import { formatDay } from '@/shared/format';
-import { useApiQuery } from '@/shared/hooks/useApiQuery';
-import { httpUrl } from '@/shared/safeUrl';
 import { colors } from '@/shared/theme';
 import { Banner, Button, Card, ErrorState, IdentityPill, Icon, LoadingState, Text, type IconName } from '@/shared/ui';
+import { useIdentityVerification } from './useIdentityVerification';
 
 interface Copy {
   title: string;
@@ -53,47 +48,9 @@ const COPY: Record<IdentityStatus, Copy> = {
   },
 };
 
-/**
- * "Verificación de identidad" for any account: a soft trust layer that never blocks the app.
- * The button creates a Didit session on the server and opens the hosted page in the in-app browser
- * (`openBrowserAsync`: Didit returns to the web callback URL, not to an app scheme, so an auth
- * session cannot capture the redirect). The status is refetched when the browser closes, when the
- * app returns to the foreground and when the screen regains focus.
- */
+/** "Verificación de identidad" for any account: a soft trust layer that never blocks the app. */
 export function IdentityCard() {
-  const state = useApiQuery((signal) => identityApi.state({ signal }), [], { refetchOnFocus: true });
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const refetch = useRef(state.refetch);
-  useEffect(() => {
-    refetch.current = state.refetch;
-  });
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') refetch.current();
-    });
-    return () => subscription.remove();
-  }, []);
-
-  async function start() {
-    setBusy(true);
-    setError('');
-    try {
-      const session = await identityApi.start();
-      const url = httpUrl(session.url);
-      if (!url) {
-        setError('No pudimos abrir la verificación. Inténtalo de nuevo en unos minutos.');
-        return;
-      }
-      await WebBrowser.openBrowserAsync(url);
-      refetch.current();
-    } catch (cause) {
-      setError(friendlyError(cause));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { state, busy, error, start } = useIdentityVerification();
 
   const current = state.data;
   const copy = current ? COPY[current.status] : undefined;

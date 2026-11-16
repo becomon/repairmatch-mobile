@@ -1,11 +1,11 @@
 import { View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { applianceTitle } from '@/features/catalog/appliances';
+import { ApplianceTile, applianceTitle } from '@/features/catalog';
 import type { MatchingRequest } from '@/shared/api/types';
 import { formatDistance, pluralize } from '@/shared/format';
 import { colors } from '@/shared/theme';
 import { Button, Card, IdentityPill, InfoChip, Text } from '@/shared/ui';
-import { ApplianceTile } from '../requests/ApplianceTile';
+import { opportunityParams } from './opportunityParam';
 
 interface Props {
   request: MatchingRequest;
@@ -25,7 +25,7 @@ export function opportunityTitle(r: Pick<MatchingRequest, 'applianceTypeName' | 
 /** Case card: appliance, distance, the client's words and a single "Enviar propuesta" action. */
 export function OpportunityCard({ request, timeLabel, reasons = [], symptom, proposalCount }: Props) {
   const router = useRouter();
-  const open = () => router.push({ pathname: '/opportunity/[id]', params: { id: String(request.requestId), data: JSON.stringify(request) } });
+  const open = () => router.push({ pathname: '/opportunity/[id]', params: opportunityParams(request) });
   return (
     <Card onPress={open} accessibilityLabel={`${opportunityTitle(request)}, a ${formatDistance(request.distanceKm)}`} style={{ gap: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

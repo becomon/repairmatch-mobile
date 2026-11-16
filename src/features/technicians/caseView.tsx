@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { applianceLabel } from '@/features/catalog/appliances';
 import type { MatchingRequest, Reason } from '@/shared/api/types';
+import { foldText } from '@/shared/text';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { PagedList } from '@/shared/hooks/usePagedList';
 import { colors, GUTTER } from '@/shared/theme';
@@ -30,18 +31,10 @@ const TABS: { value: CaseTab; label: string }[] = [
   { value: 'new', label: 'Nuevos (3 h)' },
 ];
 
-function fold(text: string): string {
-  return text
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
 function matches(row: CaseRow, needle: string): boolean {
   if (!needle) return true;
   const r = row.request;
-  return fold([r.applianceTypeName, applianceLabel(r.applianceTypeName), r.brand, r.model, r.description, row.symptom].filter(Boolean).join(' ')).includes(needle);
+  return foldText([r.applianceTypeName, applianceLabel(r.applianceTypeName), r.brand, r.model, r.description, row.symptom].filter(Boolean).join(' ')).includes(needle);
 }
 
 interface CaseView<T> {
@@ -61,7 +54,7 @@ export function useCaseView<T>(list: PagedList<T>, toRow: (item: T) => CaseRow, 
   const [tab, setTab] = useState<CaseTab>('all');
   const [sort, setSort] = useState<CaseSort>(sorts[0] ?? 'near');
   const [now] = useState(() => Date.now());
-  const needle = fold(useDebounce(search, 250));
+  const needle = foldText(useDebounce(search, 250));
 
   const tabs = TABS.filter((t) => recommended || t.value === 'all' || t.value === 'near');
   const filtered = needle.length > 0 || tab !== 'all';

@@ -1,14 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { getCurrentCoords, LocationDeniedError, type PickedLocation } from '@/features/requests/location';
-import { friendlyError } from '@/shared/api/errors';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import type { PickedLocation } from '@/shared/location';
 import { colors, radius, TOUCH } from '@/shared/theme';
 import { Banner, Button, Card, FilterChip, Icon, SearchInput, Text } from '@/shared/ui';
 import { CoverageMap } from './CoverageMap';
 import type { CoverageMapProps } from './coverageMapTypes';
-import { searchAddresses, reverseGeocode, type AddressSuggestion } from './geocoding';
 import { radiusStep, RADIUS_MAX, RADIUS_MIN } from './profileValidation';
+import { useCoverage } from './useCoverage';
 
 const LIMA = { latitude: -12.0464, longitude: -77.0428 };
 const QUICK_RADII = [2, 5, 10, 20, 50];
@@ -25,82 +22,12 @@ interface Props {
   onOpenDemand?: CoverageMapProps['onOpenDemand'];
 }
 
-interface SearchState {
-  query: string;
-  results: AddressSuggestion[];
-  failed: boolean;
-}
-
 /**
  * Coverage zone editor: search a real address, use the GPS or move the pin on the map, then pick
  * the radius. Every pin move is named through reverse geocoding so the saved zone reads as an address.
  */
 export function CoverageEditor({ value, onChange, radiusKm, onRadiusChange, radiusError, locationError, demand, onOpenDemand }: Props) {
-  const [text, setText] = useState('');
-  const query = useDebounce(text.trim(), 700);
-  const [found, setFound] = useState<SearchState | null>(null);
-  const [locating, setLocating] = useState(false);
-  const [notice, setNotice] = useState<{ tone: 'warning' | 'danger'; message: string } | null>(null);
-  const lookup = useRef(0);
-
-  // Address search: debounced and aborted when the text changes, so only the last lookup wins.
-  // A text that is already the chosen address needs no new lookup.
-  const settled = value?.label === query;
-  useEffect(() => {
-    if (query.length < 3 || settled) return;
-    const controller = new AbortController();
-    searchAddresses(query, controller.signal)
-      .then((results) => {
-        if (!controller.signal.aborted) setFound({ query, results, failed: false });
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setFound({ query, results: [], failed: true });
-      });
-    return () => controller.abort();
-  }, [query, settled]);
-
-  const searching = query.length >= 3 && !settled && found?.query !== query;
-  const current = query.length >= 3 && found?.query === query ? found : null;
-  const showSuggestions = text.trim().length >= 3 && !!current && value?.label !== text.trim();
-
-  function choose(suggestion: AddressSuggestion) {
-    setNotice(null);
-    setText(suggestion.primary);
-    onChange({ latitude: suggestion.latitude, longitude: suggestion.longitude, label: suggestion.primary });
-  }
-
-  /** Puts the point down immediately, then names it. A slow or failed lookup keeps the coordinates. */
-  function place(latitude: number, longitude: number, provisional: string) {
-    const ticket = ++lookup.current;
-    onChange({ latitude, longitude, label: provisional });
-    reverseGeocode(latitude, longitude)
-      .then((label) => {
-        if (label && ticket === lookup.current) {
-          setText(label);
-          onChange({ latitude, longitude, label });
-        }
-      })
-      .catch(() => {
-        // The coordinates are what gets saved; the name is a convenience.
-      });
-  }
-
-  async function locateWithGps() {
-    setLocating(true);
-    setNotice(null);
-    try {
-      const { latitude, longitude } = await getCurrentCoords();
-      place(latitude, longitude, 'Ubicación de tu teléfono');
-    } catch (cause) {
-      setNotice(
-        cause instanceof LocationDeniedError
-          ? { tone: 'warning', message: 'No tenemos permiso de ubicación. Busca tu dirección o mueve el pin en el mapa.' }
-          : { tone: 'danger', message: friendlyError(cause) },
-      );
-    } finally {
-      setLocating(false);
-    }
-  }
+  const { text, setText, searching, current, showSuggestions, choose, place, locating, locateWithGps, notice } = useCoverage(value, onChange);
 
   function bump(direction: 1 | -1) {
     const step = radiusStep(direction === 1 ? radiusKm : radiusKm - 1);
