@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { ServiceDetail } from '@/features/services/ServiceDetail';
+import { ServiceDetail } from '@/features/services';
 
 export default function TechnicianJobScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
