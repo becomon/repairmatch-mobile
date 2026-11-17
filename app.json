@@ -30,7 +30,13 @@
           "microphonePermission": false
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-secure-store",
+      ["expo-location", {
+        "locationWhenInUsePermission": "Permite que RepairMatch obtenga tu ubicación para indicar dónde necesitas la reparación o tu zona de atención.",
+        "isIosBackgroundLocationEnabled": false,
+        "isAndroidBackgroundLocationEnabled": false
+      }]
     ]
   }
 }

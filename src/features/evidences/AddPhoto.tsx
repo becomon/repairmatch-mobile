@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Button, Image, StyleSheet, Text, View } from 'react-native';
 import type { ImagePickerAsset } from 'expo-image-picker';
 import type { CreateEvidence, Evidence, EvidenceApi } from './api';
 import { pickPhoto } from './pickPhoto';
@@ -82,6 +82,7 @@ function PhotoForm({ requestId, evidenceApi, onAdded }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Agregar foto</Text>
+      {busy && <ActivityIndicator accessibilityLabel="Procesando foto" color="#c2410c" />}
       <Text>Fotografía el electrodoméstico o selecciona una imagen. Sube solo las fotos que quieras compartir en esta solicitud.</Text>
       <Button title="Tomar foto" disabled={busy} onPress={() => void choose('camera')} />
       <Button title="Elegir de la galería" disabled={busy} onPress={() => void choose('gallery')} />

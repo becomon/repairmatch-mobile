@@ -1,5 +1,44 @@
 # RepairMatch Mobile
 
+## Versión actual: aplicación móvil integrada
+
+`App.tsx` abre ahora las pantallas integradas del cliente y del técnico. La pantalla de `src/dev` se conserva únicamente como referencia y ya no es el punto de entrada.
+
+- `services/client.ts`: Axios con baseURL, timeout, Authorization, renovación centralizada de JWT y persistencia con Expo SecureStore. Un único refresh simultáneo; un reintento por consulta recuperable; las escrituras no se repiten automáticamente.
+- `contexts/AuthContext.tsx`: sesión y usuario compartidos. Recuperación explícita de la sesión guardada para el servidor indicado y cierre de sesión local con revocación remota.
+- `screens`: login; creación, listado paginado y detalle de solicitudes; fotos; propuestas y aceptación; perfil y zona del técnico; solicitudes compatibles; propuestas propias; servicios y reseñas.
+- `hooks`: acciones asíncronas con carga y errores; ubicación en primer plano con permisos, timeout y entrada manual alternativa.
+- Sensores: cámara y GPS. Integración externa: Cloudinary. Solicitudes, perfiles, propuestas, servicios, reseñas y referencias a fotos se guardan en el backend del equipo.
+- Interfaz en español; nombres del código en inglés.
+
+### Instalación y validación pendientes
+
+En esta revisión la descarga de npm falló por DNS (`ENOTFOUND registry.npmjs.org`). Las nuevas dependencias están declaradas en `package.json`, pero falta instalarlas y regenerar `package-lock.json`. No se declara aprobada la compilación ni la prueba física de esta versión.
+
+```powershell
+npm.cmd install
+npx.cmd expo install --check
+npm.cmd run verify
+npx.cmd expo export --platform android
+npx.cmd expo start --clear --lan
+```
+
+Después de la instalación, comprobar el recorrido de ambos roles con el backend real y los sensores en un dispositivo. Ver [checklist de aceptación](docs/ACEPTACION_MOVIL.md) y [guía de exposición y preguntas](docs/PREPARACION_EXPOSICION.md).
+
+### Notas de integración y alcance
+
+- La cuenta puede crearse previamente en la web para la demo; esta versión móvil incluye inicio de sesión, no registro.
+- La restauración requiere pulsar «Recuperar sesión guardada» con la URL correcta del backend; no se almacena una contraseña.
+- El cierre local elimina las credenciales aun si la revocación remota falla. La UI informa el fallo de red; el refresh remoto puede seguir vigente hasta su expiración.
+- Si una escritura pierde la respuesta, consultar su resultado antes de repetirla. No hay garantía de idempotencia para estas operaciones.
+- Una API pública requiere HTTPS. HTTP solo se admite para localhost y direcciones privadas de desarrollo.
+- El despliegue público y la distribución móvil son una tarea adicional. Un QR local de Metro no demuestra despliegue público.
+- Los porcentajes individuales representan cumplimiento de responsabilidades de cada persona, de 0 a 100; no tienen que sumar 100 entre el grupo. La coevaluación y los aportes nuevos deben ser acordados por el equipo, sin atribuir estos cambios a otros integrantes.
+
+## Documentación histórica del módulo inicial
+
+Las secciones siguientes describen la etapa anterior de la pantalla temporal. Sus pendientes de autenticación y navegación quedan reemplazados por la implementación anterior; las advertencias sobre pruebas físicas y configuración siguen aplicando.
+
 Expo SDK 58 and TypeScript. Current contribution: camera and photo evidence module (becomon).
 Authentication, request screens, SecureStore and the authenticated HTTP client remain integration work for the mobile foundation owner.
 

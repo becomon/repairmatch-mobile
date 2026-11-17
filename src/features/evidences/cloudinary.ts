@@ -42,6 +42,10 @@ export async function uploadPhoto(photo: ImagePickerAsset): Promise<CreateEviden
     const mediaType = `image/${data.format === 'jpg' ? 'jpeg' : data.format}`;
     if (mediaType.length > 50) throw new Error("Formato de imagen no compatible.");
     return { mediaUrl: data.secure_url, mediaType };
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') throw new Error('La subida tardó demasiado. Revisa tu conexión e intenta nuevamente.');
+    if (error instanceof TypeError) throw new Error('No se pudo conectar con el servicio de fotos. Revisa tu conexión.');
+    throw error;
   } finally {
     clearTimeout(timer);
   }
