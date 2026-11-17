@@ -1,5 +1,25 @@
 # RepairMatch Mobile
 
+## Versión actual: Expo Router e integración de fotos
+
+La integración con main conserva la aplicación completa del equipo: el punto de entrada es expo-router/entry y las rutas están en src/app. App.tsx fue retirado porque ya no se utiliza.
+
+- src/app/_layout.tsx y src/features/auth/AuthProvider.tsx: navegación y sesión del equipo, con registro, login y restauración automática.
+- src/shared/api/client.ts y storage.ts: cliente HTTP compartido, renovación de sesión y SecureStore nativo; las consultas recuperables se reintentan y las escrituras no se duplican automáticamente.
+- src/features/evidences: cámara/galería, vista previa, indicador de carga y subida multipart compatible con SDK 58 mediante File y expo/fetch; se conserva el diseño compartido y los mensajes amigables ante red o timeout.
+- src/features/requests, proposals, services y technicians: flujos integrados de cliente y técnico, ubicación y zona de servicio.
+- Los directorios src/screens, contexts, services y hooks de la rama anterior se mantienen como referencia, pero no son la navegación ni el almacén de sesión de la app integrada. No crear otro proveedor de autenticación en las rutas.
+
+### Validación de esta integración
+
+La instalación offline no pudo completar todas las dependencias nuevas de main. Ejecutar npm.cmd ci, npm.cmd run verify y npx.cmd expo export --platform android antes de fusionar el PR. El merge de código no demuestra las pruebas físicas de cámara, GPS ni conectividad de producción.
+
+Ver docs/ACEPTACION_MOVIL.md para la prueba real y docs/PREPARACION_EXPOSICION.md para el estudio. Sus referencias a la estructura anterior deben leerse con el aviso de integración que encabeza esos documentos.
+
+## Documentación histórica del módulo inicial
+
+Las secciones siguientes describen la etapa anterior de la pantalla temporal. Sus pendientes de autenticación y navegación quedan reemplazados por la implementación anterior; las advertencias sobre pruebas físicas y configuración siguen aplicando.
+
 Expo SDK 58 and TypeScript. Current contribution: camera and photo evidence module (becomon).
 Authentication, request screens, SecureStore and the authenticated HTTP client remain integration work for the mobile foundation owner.
 

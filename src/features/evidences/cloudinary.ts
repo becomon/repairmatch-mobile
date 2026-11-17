@@ -62,6 +62,10 @@ export async function uploadPhoto(photo: ImagePickerAsset): Promise<CreateEviden
     });
     if (!response.ok) throw new Error('No se pudo subir la foto. Revisa tu conexión y el preset de subida.');
     return toEvidence(await response.json());
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') throw new Error('La subida tardó demasiado. Revisa tu conexión e intenta nuevamente.');
+    if (error instanceof TypeError) throw new Error('No se pudo conectar con el servicio de fotos. Revisa tu conexión.');
+    throw error;
   } finally {
     clearTimeout(timer);
   }
