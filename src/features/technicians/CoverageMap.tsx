@@ -1,112 +1,117 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, type ComponentType, type Ref } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { Circle, Marker, type LatLng, type MapPressEvent, type MarkerDragStartEndEvent } from 'react-native-maps';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { applianceVisual } from '@/features/catalog/appliances';
+import { WebView, type WebViewMessageEvent, type WebViewProps } from 'react-native-webview';
 import { colors, radius } from '@/shared/theme';
 import { useReduceMotion } from '@/shared/ui/motion';
 import type { CoverageMapProps } from './coverageMapTypes';
-import { DEMAND_CIRCLE_METERS, withAlpha } from './demand';
+import { DEMAND_CIRCLE_METERS } from './demand';
 import { DemandChip } from './DemandChip';
 
-/** Roughly how many degrees of latitude fit the circle with some margin around it. */
-function deltaFor(radiusKm: number): number {
-  return Math.min(Math.max((radiusKm * 2.6) / 111, 0.01), 20);
-}
+// react-native-webview 14 class typings resolve to `never` props under @types/react 19.3.
+const Web = WebView as unknown as ComponentType<WebViewProps & { ref?: Ref<WebView> }>;
 
 /**
- * Native map (Apple Maps on iOS, Google Maps on Android; both work in Expo Go). The pin is draggable,
- * a tap moves it too, and the circle shows the coverage radius. Nearby requests are drawn as soft
- * circles at their approximate point, so a technician sees where demand is without seeing any home.
+ * Leaflet + OpenStreetMap inside a WebView: no API key, no billing, and it runs the same in Expo Go
+ * and in a standalone APK. The pin is draggable, a tap moves it, and nearby requests are drawn as
+ * soft circles at their approximate point, so a technician sees where demand is without any home.
  */
 export function CoverageMap({ latitude, longitude, radiusKm, onPinMoved, demand, onOpenDemand }: CoverageMapProps) {
-  const mapRef = useRef<MapView>(null);
-  const center: LatLng = { latitude, longitude };
-  // Frame the whole circle whenever the centre changes from outside (search result, GPS).
-  const lastFramed = useRef(`${latitude},${longitude}`);
-  useEffect(() => {
-    const key = `${latitude},${longitude}`;
-    if (key === lastFramed.current) return;
-    lastFramed.current = key;
-    const delta = deltaFor(radiusKm);
-    mapRef.current?.animateToRegion({ latitude, longitude, latitudeDelta: delta, longitudeDelta: delta }, 350);
-  }, [latitude, longitude, radiusKm]);
-
-  const points = demand?.ready ? demand.points : [];
-  const hasDemand = points.length > 0;
-
-  // Cheap pulse: the fill alternates between two opacities every ~1.8 s. One timer for the whole map,
-  // and none at all with reduced motion or without circles.
+  const web = useRef<WebView>(null);
   const reduce = useReduceMotion();
-  const [bright, setBright] = useState(false);
-  useEffect(() => {
-    if (reduce || !hasDemand) return;
-    const id = setInterval(() => setBright((b) => !b), 1800);
-    return () => clearInterval(id);
-  }, [reduce, hasDemand]);
+  const points = useMemo(() => (demand?.ready ? demand.points : []), [demand]);
+  const loaded = useRef(false);
+  // The pin's own move must not re-frame the map.
+  const ownMove = useRef<string | null>(null);
 
-  // Custom marker views are bitmapped; stop tracking once the icon font had time to render.
-  const [track, setTrack] = useState(true);
-  const count = points.length;
-  useEffect(() => {
-    if (count === 0) return;
-    const id = setTimeout(() => setTrack(false), 1200);
-    return () => clearTimeout(id);
-  }, [count]);
+  const state = useMemo(
+    () =>
+      JSON.stringify({
+        lat: latitude,
+        lng: longitude,
+        radius: radiusKm * 1000,
+        points: points.map((p) => ({ id: p.requestId, lat: p.latitude, lng: p.longitude, color: p.color, label: p.label, km: p.distanceKm })),
+      }),
+    [latitude, longitude, radiusKm, points],
+  );
 
-  function moved(coordinate: LatLng) {
-    // The map already shows the pin there, so it must not re-frame on its own move.
-    lastFramed.current = `${coordinate.latitude},${coordinate.longitude}`;
-    onPinMoved(Number(coordinate.latitude.toFixed(6)), Number(coordinate.longitude.toFixed(6)));
+  useEffect(() => {
+    if (!loaded.current) return;
+    const key = `${latitude},${longitude}`;
+    const frame = ownMove.current !== key;
+    ownMove.current = null;
+    web.current?.injectJavaScript(`window.rmUpdate(${state}, ${frame}); true;`);
+  }, [state, latitude, longitude]);
+
+  function onMessage(event: WebViewMessageEvent) {
+    const msg = JSON.parse(event.nativeEvent.data) as { type: string; lat?: number; lng?: number; id?: number };
+    if (msg.type === 'ready') {
+      loaded.current = true;
+      web.current?.injectJavaScript(`window.rmUpdate(${state}, true); true;`);
+    } else if (msg.type === 'move' && msg.lat !== undefined && msg.lng !== undefined) {
+      const lat = Number(msg.lat.toFixed(6));
+      const lng = Number(msg.lng.toFixed(6));
+      ownMove.current = `${lat},${lng}`;
+      onPinMoved(lat, lng);
+    } else if (msg.type === 'demand') {
+      const point = points.find((p) => p.requestId === msg.id);
+      if (point) onOpenDemand?.(point);
+    }
   }
 
-  const delta = deltaFor(radiusKm);
+  const html = useMemo(() => buildHtml(reduce), [reduce]);
   return (
     <View style={styles.frame} accessibilityLabel="Mapa de tu zona de atención. Arrastra el pin o toca el mapa para moverlo.">
-      <MapView
-        ref={mapRef}
+      <Web
+        ref={web}
         style={styles.map}
-        initialRegion={{ latitude, longitude, latitudeDelta: delta, longitudeDelta: delta }}
-        onPress={(event: MapPressEvent) => moved(event.nativeEvent.coordinate)}
-        toolbarEnabled={false}
-        rotateEnabled={false}
-        pitchEnabled={false}
-      >
-        <Circle center={center} radius={radiusKm * 1000} strokeColor={colors.primary} strokeWidth={2} fillColor={colors.coverageFill} />
-        {points.flatMap((p) => {
-          const at: LatLng = { latitude: p.latitude, longitude: p.longitude };
-          return [
-            <Circle
-              key={`c${p.requestId}`}
-              center={at}
-              radius={DEMAND_CIRCLE_METERS}
-              strokeColor={withAlpha(p.color, 0.35)}
-              strokeWidth={1}
-              fillColor={withAlpha(p.color, bright ? 0.3 : 0.18)}
-            />,
-            <Marker
-              key={`m${p.requestId}`}
-              coordinate={at}
-              anchor={{ x: 0.5, y: 0.5 }}
-              tracksViewChanges={track}
-              accessibilityLabel={`${p.label} cerca de ti, a ${p.distanceKm.toFixed(1)} kilómetros. Toca para ver el caso.`}
-              onPress={() => onOpenDemand?.(p)}
-            >
-              <View style={[styles.dot, { borderColor: p.color }]}>
-                <MaterialCommunityIcons name={applianceVisual(p.request.applianceTypeName).icon} size={14} color={p.color} />
-              </View>
-            </Marker>,
-          ];
-        })}
-        <Marker coordinate={center} draggable pinColor={colors.primary} onDragEnd={(event: MarkerDragStartEndEvent) => moved(event.nativeEvent.coordinate)} />
-      </MapView>
-      {demand?.ready ? <DemandChip count={count} /> : null}
+        originWhitelist={['*']}
+        source={{ html }}
+        onMessage={onMessage}
+        scrollEnabled={false}
+        nestedScrollEnabled
+      />
+      {demand?.ready ? <DemandChip count={points.length} /> : null}
     </View>
   );
 }
 
+function buildHtml(reduce: boolean): string {
+  return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>html,body,#m{margin:0;height:100%;background:${colors.neutralSoft}}
+.rm-pulse{animation:${reduce ? 'none' : 'rmp 1.8s ease-in-out infinite alternate'}}
+@keyframes rmp{from{fill-opacity:.18}to{fill-opacity:.3}}</style></head>
+<body><div id="m"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+var post=function(o){window.ReactNativeWebView.postMessage(JSON.stringify(o))};
+var map=L.map('m',{zoomControl:false,attributionControl:true});
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+var pin=L.circleMarker([0,0],{radius:9,color:'#fff',weight:3,fillColor:'${colors.primary}',fillOpacity:1}).addTo(map);
+var area=L.circle([0,0],{radius:1,color:'${colors.primary}',weight:2,fillColor:'${colors.primary}',fillOpacity:.1}).addTo(map);
+var layer=L.layerGroup().addTo(map);
+var dragging=false;
+pin.on('mousedown',function(){dragging=true;map.dragging.disable()});
+map.on('mousemove',function(e){if(dragging)pin.setLatLng(e.latlng)});
+map.on('mouseup',function(e){if(dragging){dragging=false;map.dragging.enable();post({type:'move',lat:e.latlng.lat,lng:e.latlng.lng})}});
+map.on('click',function(e){pin.setLatLng(e.latlng);post({type:'move',lat:e.latlng.lat,lng:e.latlng.lng})});
+window.rmUpdate=function(s,frame){
+  var c=[s.lat,s.lng];pin.setLatLng(c);area.setLatLng(c);area.setRadius(s.radius);
+  layer.clearLayers();
+  s.points.forEach(function(p){
+    var z=L.circle([p.lat,p.lng],{radius:${DEMAND_CIRCLE_METERS},color:p.color,weight:1,opacity:.35,fillColor:p.color,fillOpacity:.2,className:'rm-pulse'});
+    z.on('click',function(ev){L.DomEvent.stopPropagation(ev);post({type:'demand',id:p.id})});
+    var d=L.circleMarker([p.lat,p.lng],{radius:6,color:p.color,weight:2,fillColor:'#fff',fillOpacity:1});
+    d.on('click',function(ev){L.DomEvent.stopPropagation(ev);post({type:'demand',id:p.id})});
+    layer.addLayer(z);layer.addLayer(d);
+  });
+  if(frame)map.fitBounds(area.getBounds(),{padding:[16,16],animate:false});
+};
+post({type:'ready'});
+</script></body></html>`;
+}
+
 const styles = StyleSheet.create({
   frame: { height: 280, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.neutralSoft },
-  map: { ...StyleSheet.absoluteFill },
-  dot: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  map: { flex: 1, backgroundColor: colors.neutralSoft },
 });
