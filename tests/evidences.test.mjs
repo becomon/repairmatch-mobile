@@ -23,3 +23,15 @@ test('does not retry an uncertain backend write automatically', async () => {
   await assert.rejects(api.add(1, { mediaUrl: 'https://example.com/p.jpg', mediaType: 'image/jpeg' }), failure);
   assert.equal(calls, 1);
 });
+
+test('lists evidences and forwards the abort signal only when one is given', async () => {
+  const calls = [];
+  const api = createEvidenceApi({ request: async (...args) => { calls.push(args); return []; } });
+  const controller = new AbortController();
+  await api.list(7);
+  await api.list(7, { signal: controller.signal });
+  assert.deepEqual(calls, [
+    ['/requests/7/evidences', undefined],
+    ['/requests/7/evidences', { signal: controller.signal }],
+  ]);
+});

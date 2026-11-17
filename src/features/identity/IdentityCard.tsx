@@ -1,0 +1,96 @@
+import { View } from 'react-native';
+import type { IdentityStatus } from '@/shared/api/types';
+import { formatDay } from '@/shared/format';
+import { colors } from '@/shared/theme';
+import { Banner, Button, Card, ErrorState, IdentityPill, Icon, LoadingState, Text, type IconName } from '@/shared/ui';
+import { useIdentityVerification } from './useIdentityVerification';
+
+interface Copy {
+  title: string;
+  text: string;
+  icon: IconName;
+  fg: string;
+  bg: string;
+  action?: string;
+}
+
+const COPY: Record<IdentityStatus, Copy> = {
+  NOT_STARTED: {
+    title: 'Aún no verificas tu identidad',
+    text: 'Es opcional y toma pocos minutos. La insignia de identidad verificada le dice a los demás que eres una persona real.',
+    icon: 'shield-outline',
+    fg: colors.textSoft,
+    bg: colors.surface2,
+    action: 'Verificar mi identidad',
+  },
+  PENDING: {
+    title: 'Verificación en revisión',
+    text: 'Estamos revisando tu verificación. Puede tardar unos minutos; mientras tanto puedes seguir usando RepairMatch.',
+    icon: 'time-outline',
+    fg: colors.warning,
+    bg: colors.warningSoft,
+    action: 'Continuar verificación',
+  },
+  VERIFIED: {
+    title: 'Identidad verificada',
+    text: 'Listo: tu perfil muestra la insignia de identidad verificada.',
+    icon: 'shield-checkmark',
+    fg: colors.freshStrong,
+    bg: colors.freshSoft,
+  },
+  REJECTED: {
+    title: 'No pudimos verificar tu identidad',
+    text: 'La verificación no fue aprobada. Puedes intentarlo de nuevo con un documento vigente y buena luz.',
+    icon: 'alert-circle-outline',
+    fg: colors.danger,
+    bg: colors.dangerSoft,
+    action: 'Intentar de nuevo',
+  },
+};
+
+/** "Verificación de identidad" for any account: a soft trust layer that never blocks the app. */
+export function IdentityCard() {
+  const { state, busy, error, start } = useIdentityVerification();
+
+  const current = state.data;
+  const copy = current ? COPY[current.status] : undefined;
+
+  return (
+    <Card style={{ gap: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <Text variant="heading" accessibilityRole="header">Verificación de identidad</Text>
+        {current?.status === 'VERIFIED' ? <IdentityPill nameMatches={current.nameMatches} /> : null}
+      </View>
+
+      {state.initialLoading ? (
+        <LoadingState />
+      ) : !current || !copy ? (
+        <ErrorState error={state.error} onRetry={state.refetch} />
+      ) : (
+        <>
+          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: copy.bg, alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name={copy.icon} size={22} color={copy.fg} />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text variant="bodyStrong">{copy.title}</Text>
+              <Text variant="small" color={colors.textMuted}>{copy.text}</Text>
+              {current.status === 'VERIFIED' && current.verifiedAt ? (
+                <Text variant="small" color={colors.textMuted}>Verificada el {formatDay(current.verifiedAt)}</Text>
+              ) : null}
+            </View>
+          </View>
+          {error ? <Banner tone="danger" message={error} /> : null}
+          {copy.action ? <Button label={copy.action} icon="shield-checkmark-outline" loading={busy} onPress={() => void start()} /> : null}
+          {current.status === 'PENDING' ? <Button label="Actualizar estado" variant="secondary" icon="refresh-outline" onPress={state.refetch} /> : null}
+          <Text variant="small" color={colors.textMuted}>
+            No guardamos fotos de tu documento ni datos biométricos: solo si quedaste verificado o no.
+          </Text>
+          <Text variant="small" color={colors.textMuted}>
+            El nombre del perfil lo elige cada usuario. La verificación confirma que es una persona real con un documento válido.
+          </Text>
+        </>
+      )}
+    </Card>
+  );
+}

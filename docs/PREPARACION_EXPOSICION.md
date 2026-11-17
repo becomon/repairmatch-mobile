@@ -1,3 +1,5 @@
+> Actualización tras integrar main: la app usa Expo Router en src/app, AuthProvider en src/features/auth y el cliente en src/shared/api. Las referencias anteriores a App.tsx, src/screens, src/contexts o src/services describen la versión previa; no son los puntos de entrada actuales. Las comprobaciones físicas siguen pendientes.
+
 # RepairMatch: exposición y ronda de preguntas
 
 Esta guía describe el código actual. Las funciones nuevas deben superar la instalación, verificaciones y prueba física antes de anunciarlas como demostradas. No presentar un resultado simulado como evidencia de funcionamiento real.

@@ -1,39 +1,20 @@
 # RepairMatch Mobile
 
-## Versión actual: aplicación móvil integrada
+## Versión actual: Expo Router e integración de fotos
 
-`App.tsx` abre ahora las pantallas integradas del cliente y del técnico. La pantalla de `src/dev` se conserva únicamente como referencia y ya no es el punto de entrada.
+La integración con main conserva la aplicación completa del equipo: el punto de entrada es expo-router/entry y las rutas están en src/app. App.tsx fue retirado porque ya no se utiliza.
 
-- `services/client.ts`: Axios con baseURL, timeout, Authorization, renovación centralizada de JWT y persistencia con Expo SecureStore. Un único refresh simultáneo; un reintento por consulta recuperable; las escrituras no se repiten automáticamente.
-- `contexts/AuthContext.tsx`: sesión y usuario compartidos. Recuperación explícita de la sesión guardada para el servidor indicado y cierre de sesión local con revocación remota.
-- `screens`: login; creación, listado paginado y detalle de solicitudes; fotos; propuestas y aceptación; perfil y zona del técnico; solicitudes compatibles; propuestas propias; servicios y reseñas.
-- `hooks`: acciones asíncronas con carga y errores; ubicación en primer plano con permisos, timeout y entrada manual alternativa.
-- Sensores: cámara y GPS. Integración externa: Cloudinary. Solicitudes, perfiles, propuestas, servicios, reseñas y referencias a fotos se guardan en el backend del equipo.
-- Interfaz en español; nombres del código en inglés.
+- src/app/_layout.tsx y src/features/auth/AuthProvider.tsx: navegación y sesión del equipo, con registro, login y restauración automática.
+- src/shared/api/client.ts y storage.ts: cliente HTTP compartido, renovación de sesión y SecureStore nativo; las consultas recuperables se reintentan y las escrituras no se duplican automáticamente.
+- src/features/evidences: cámara/galería, vista previa, indicador de carga y subida multipart compatible con SDK 58 mediante File y expo/fetch; se conserva el diseño compartido y los mensajes amigables ante red o timeout.
+- src/features/requests, proposals, services y technicians: flujos integrados de cliente y técnico, ubicación y zona de servicio.
+- Los directorios src/screens, contexts, services y hooks de la rama anterior se mantienen como referencia, pero no son la navegación ni el almacén de sesión de la app integrada. No crear otro proveedor de autenticación en las rutas.
 
-### Instalación y validación pendientes
+### Validación de esta integración
 
-En esta revisión la descarga de npm falló por DNS (`ENOTFOUND registry.npmjs.org`). Las nuevas dependencias están declaradas en `package.json`, pero falta instalarlas y regenerar `package-lock.json`. No se declara aprobada la compilación ni la prueba física de esta versión.
+La instalación offline no pudo completar todas las dependencias nuevas de main. Ejecutar npm.cmd ci, npm.cmd run verify y npx.cmd expo export --platform android antes de fusionar el PR. El merge de código no demuestra las pruebas físicas de cámara, GPS ni conectividad de producción.
 
-```powershell
-npm.cmd install
-npx.cmd expo install --check
-npm.cmd run verify
-npx.cmd expo export --platform android
-npx.cmd expo start --clear --lan
-```
-
-Después de la instalación, comprobar el recorrido de ambos roles con el backend real y los sensores en un dispositivo. Ver [checklist de aceptación](docs/ACEPTACION_MOVIL.md) y [guía de exposición y preguntas](docs/PREPARACION_EXPOSICION.md).
-
-### Notas de integración y alcance
-
-- La cuenta puede crearse previamente en la web para la demo; esta versión móvil incluye inicio de sesión, no registro.
-- La restauración requiere pulsar «Recuperar sesión guardada» con la URL correcta del backend; no se almacena una contraseña.
-- El cierre local elimina las credenciales aun si la revocación remota falla. La UI informa el fallo de red; el refresh remoto puede seguir vigente hasta su expiración.
-- Si una escritura pierde la respuesta, consultar su resultado antes de repetirla. No hay garantía de idempotencia para estas operaciones.
-- Una API pública requiere HTTPS. HTTP solo se admite para localhost y direcciones privadas de desarrollo.
-- El despliegue público y la distribución móvil son una tarea adicional. Un QR local de Metro no demuestra despliegue público.
-- Los porcentajes individuales representan cumplimiento de responsabilidades de cada persona, de 0 a 100; no tienen que sumar 100 entre el grupo. La coevaluación y los aportes nuevos deben ser acordados por el equipo, sin atribuir estos cambios a otros integrantes.
+Ver docs/ACEPTACION_MOVIL.md para la prueba real y docs/PREPARACION_EXPOSICION.md para el estudio. Sus referencias a la estructura anterior deben leerse con el aviso de integración que encabeza esos documentos.
 
 ## Documentación histórica del módulo inicial
 
@@ -119,9 +100,15 @@ Verification in this session: six isolated tests, TypeScript and ESLint passed. 
 If API logs show PostgreSQL password authentication failure, run npm run backend:repair. This checks authentication through the Docker service hostname (postgres), then recreates only the API. For a confirmed local password mismatch, npm run backend:repair -- --sync-local-password synchronizes the repairmatch role password with the existing PostgreSQL container configuration. It preserves all tables and volumes, and does not reset a password for a DNS/network error. API readiness is checked before reporting success.
 ## Participación
 
+100 % significa que cumplió por completo sus responsabilidades. **Porcentajes acordados por el equipo.**
+
 | Integrante | Aportes implementados | Participación |
 | --- | --- | --- |
-| becomon | Módulo de cámara y galería, avisos de permisos y alternativa de galería, subida sin firma a Cloudinary, registro y consulta de evidencias, pantalla temporal de prueba, pruebas automatizadas y apoyo a la subida web. Prueba física e integración con la base móvil pendientes. | Por acordar con el equipo |
+| Sebas-Leo | Backend: flujo de colaboración y contrato de errores, propuestas y comparación, paginación, IA local, rankings, verificación de identidad con Didit y ubicación aproximada de la demanda; web: base, sistema de diseño, dashboards, landing, modo oscuro y despliegue (Vercel, Render, Neon y Cloudinary); móvil: app con Expo Router y su identidad visual (PR #2 y #3) | 100 % |
+| AdrianPacheco12343 | Backend: entidades, datos iniciales y endpoints de servicios; móvil: prototipo de login, registro, lista y detalle de solicitudes (PR #25, en revisión); pruebas y testeo de la app | 100 % |
+| andrehcv | Backend: perfil del técnico, área de cobertura y motor de compatibilidad; web: perfil del técnico, zona de cobertura, geocodificación real de direcciones y pin en el mapa (PR #13 y #23) | 100 % |
+| becomon | Backend: base Spring Boot, identidad (registro, JWT, refresh, CORS), permisos y Postman; web: subida de fotos desde archivos, evidencias en solicitudes, resumen del inicio y pruebas (PR #20 y #21); móvil: módulo de cámara y galería, subida sin firma a Cloudinary, evidencias y pruebas (PR #1) | 100 % |
+| camilaalfaro-afk | Backend: solicitudes, evidencias, ciclo de la solicitud y contenedor Docker; web: ciclo de vida de los servicios y reseñas (PR #12, #15 y #16) | 100 % |
 
 ## Prueba desde un celular por Wi-Fi
 
@@ -142,3 +129,16 @@ El proyecto utiliza SDK 58 para coincidir con Expo Go del equipo. Después de ac
 ## Compatibilidad de subida en SDK 58
 
 Mantén EXPO_PUBLIC_USE_RN_FETCH=1 en .env.local (incluido en .env.example). El módulo envía archivos locales mediante multipart con { uri, name, type }, por lo que necesita el fetch de React Native. Expo 58 instala otro fetch por defecto. Tras cambiar esta variable, detén Metro y ejecuta npx.cmd expo start --clear --lan; vuelve a abrir el proyecto en Expo Go.
+
+## Build del APK
+
+El APK se genera en la nube con EAS Build (perfil `preview`, ver `eas.json`). La clave de Google Maps nunca va en el repositorio: se lee de la variable de entorno `GOOGLE_MAPS_API_KEY` en `app.config.js`.
+
+1. Crea una cuenta en expo.dev e inicia sesión: `npx eas-cli@latest login`.
+2. Vincula el proyecto (crea el id de proyecto en tu cuenta): `npx eas-cli@latest init`.
+3. Crea la variable de la clave de Maps en EAS, con visibilidad `secret`, para el entorno `preview`: `npx eas-cli@latest env:set --name GOOGLE_MAPS_API_KEY --value "<tu-clave>" --environment preview --visibility secret`.
+4. Genera el APK: `npx eas-cli@latest build --platform android --profile preview`. En la primera ejecución acepta crear el keystore de Android.
+5. Copia el SHA-1 en expo.dev, en Credentials, Android, `pe.edu.utec.repairmatch`, Android Keystore. En Google Cloud, restringe la clave a apps Android con ese paquete y ese SHA-1, y activa Maps SDK for Android.
+6. Descarga el APK desde el enlace o el QR del build e instálalo en el celular. El backend en Render tarda unos 50 s en despertar.
+
+Si no defines `GOOGLE_MAPS_API_KEY`, el APK se genera igual, pero los mapas salen en blanco.

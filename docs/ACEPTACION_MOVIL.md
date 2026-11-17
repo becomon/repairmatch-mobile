@@ -1,3 +1,5 @@
+> Actualización tras integrar main: la app usa Expo Router en src/app, AuthProvider en src/features/auth y el cliente en src/shared/api. Las referencias anteriores a App.tsx, src/screens, src/contexts o src/services describen la versión previa; no son los puntos de entrada actuales. Las comprobaciones físicas siguen pendientes.
+
 # Aceptación móvil antes de entregar
 
 Estado de esta revisión: código nuevo implementado, instalación bloqueada por DNS. No equivale a una certificación de cumplimiento ni garantiza una nota. Registrar fecha, dispositivo, resultado real y evidencia de cada prueba; no marcar casillas sin ejecutarlas.

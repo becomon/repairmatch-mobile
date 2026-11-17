@@ -1,0 +1,21 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "environment": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://repairmatch-backend.onrender.com/api",
+        "EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME": "buwtlbce",
+        "EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "repairmatch_unsigned",
+        "EXPO_PUBLIC_USE_RN_FETCH": "1"
+      }
+    }
+  }
+}
