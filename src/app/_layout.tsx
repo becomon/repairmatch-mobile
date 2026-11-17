@@ -8,6 +8,7 @@ import { PlusJakartaSans_700Bold, PlusJakartaSans_800ExtraBold } from '@expo-goo
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { AuthProvider } from '@/features/auth';
 import { colors } from '@/shared/theme';
+import { API_BASE_URL } from '@/shared/api/config';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -20,6 +21,11 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  // Wake the sleeping API as soon as the app opens, so the login does not pay the cold start.
+  useEffect(() => {
+    void fetch(`${API_BASE_URL}/appliance-types`).catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (loaded || error) void SplashScreen.hideAsync();

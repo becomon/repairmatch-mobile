@@ -19,7 +19,8 @@ export const API_MAX_PAGE_SIZE = 100;
 export const HOME_PREVIEW_COUNT = 3;
 export const AI_SEARCH_PAGE_SIZE = 20;
 
-export const API_TIMEOUT_MS = 30_000;
+// The free Render instance sleeps; a cold start can take ~50 s, so the first request must outlast it.
+export const API_TIMEOUT_MS = 75_000;
 export const UPLOAD_TIMEOUT_MS = 60_000;
 /** How long a request fetched for a card is reused by other cards. */
 export const REQUEST_CACHE_TTL_MS = 15_000;
