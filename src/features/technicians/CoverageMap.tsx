@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, type ComponentType, type Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent, type WebViewProps } from 'react-native-webview';
 import { colors, radius } from '@/shared/theme';
 import { useReduceMotion } from '@/shared/ui/motion';
@@ -67,6 +67,13 @@ export function CoverageMap({ latitude, longitude, radiusKm, onPinMoved, demand,
         originWhitelist={['*']}
         source={{ html }}
         onMessage={onMessage}
+        // The map page must never be replaced: links (the OSM credit) open in the system browser instead.
+        onShouldStartLoadWithRequest={(req) => {
+          if (req.url === 'about:blank' || req.url.startsWith('data:')) return true;
+          if (/^https:\/\//.test(req.url)) void Linking.openURL(req.url);
+          return false;
+        }}
+        setSupportMultipleWindows={false}
         scrollEnabled={false}
         nestedScrollEnabled
       />
