@@ -8,7 +8,6 @@ La integración con main conserva la aplicación completa del equipo: el punto d
 - src/shared/api/client.ts y storage.ts: cliente HTTP compartido, renovación de sesión y SecureStore nativo; las consultas recuperables se reintentan y las escrituras no se duplican automáticamente.
 - src/features/evidences: cámara/galería, vista previa, indicador de carga y subida multipart compatible con SDK 58 mediante File y expo/fetch; se conserva el diseño compartido y los mensajes amigables ante red o timeout.
 - src/features/requests, proposals, services y technicians: flujos integrados de cliente y técnico, ubicación y zona de servicio.
-- Los directorios src/screens, contexts, services y hooks de la rama anterior se mantienen como referencia, pero no son la navegación ni el almacén de sesión de la app integrada. No crear otro proveedor de autenticación en las rutas.
 
 ### Validación de esta integración
 
